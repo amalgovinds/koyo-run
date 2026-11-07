@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Shippori Mincho', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-washi-warm: #f3ece0;
+  --color-washi-border: #d5c7b2;
+  --color-washi-ink: #1e1916;
+  --color-washi-umber: #5c4e43;
+  --color-washi-bark: #8a7968;
+  --color-washi-momiji: #c83e2b;
+  --color-washi-persimmon: #d96b27;
+  --color-washi-gold: #c88a1e;
+  --color-washi-moss: #3a6b52;
+  --color-washi-jrgreen: #e2efe8;
+  --color-washi-jrink: #1b4d3e;
+}
+
+/* paste custom classes below: .hanko-seal, .ticket-stub,
+    .jr-ticket-paper, .washi-tape, .notebook-ruled, keyframes, etc. */
