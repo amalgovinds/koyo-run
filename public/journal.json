@@ -1,0 +1,167 @@
+[
+  {
+    "dayId": "day0",
+    "dayLabel": "Day 0",
+    "dateStr": "Nov 16, 2026",
+    "placeHeading": "Bengaluru & Mumbai — Departure for Tokyo",
+    "status": "published",
+    "highlight": "Boarding Air India AI-356 non-stop to Tokyo Haneda",
+    "moodWeather": "Smooth 4h 40m BOM T2 transit",
+    "steps": "7,400 steps",
+    "content": "Started the journey at Bengaluru T2 on AI-2852 to Mumbai T2. Having both flights in BOM Terminal 2 made the layover effortless before boarding AI-356 non-stop to Haneda."
+  },
+  {
+    "dayId": "day1",
+    "dayLabel": "Day 1",
+    "dateStr": "Nov 17, 2026",
+    "placeHeading": "Tokyo — Asakusa, Ueno Ginkgos, Imperial Palace & Skytree Sunset",
+    "status": "published",
+    "highlight": "Watching the 16:33 sunset paint Mt. Fuji from Tokyo Skytree",
+    "moodWeather": "Crisp 17°C/9°C · Golden ginkgo leaves",
+    "steps": "23,100 steps",
+    "content": "Landed at Haneda T3 at 04:55 AM, rode the direct train to Higashi-Nihombashi, and dropped bags at APA Bakurocho. Explored Senso-ji in early morning light, Ueno Park's golden ginkgos, Imperial Palace East Gardens, and caught the 16:00 sunset slot at Tokyo Skytree."
+  },
+  {
+    "dayId": "day2",
+    "dayLabel": "Day 2",
+    "dateStr": "Nov 18, 2026",
+    "placeHeading": "Kamakura & Enoshima — Direct JR Coastal Day Trip",
+    "status": "draft",
+    "highlight": "Enoden coastal tram & 16:32 Pacific sunset at Enoshima",
+    "moodWeather": "17°C · Sunny coastal breeze",
+    "steps": "21,500 steps",
+    "content": "Boarded the direct JR Sobu-Yokosuka Rapid right outside JR Bakurocho Station (zero transfers to Kita-Kamakura!). Explored Engaku-ji's red maples, the Great Bronze Buddha at Kotoku-in, and watched sunset over the sea at Enoshima."
+  },
+  {
+    "dayId": "day3",
+    "dayLabel": "Day 3",
+    "dateStr": "Nov 19, 2026",
+    "placeHeading": "West Tokyo — Meiji Jingu Gaien, Harajuku, Tokyo Toilet Trail & Shibuya SKY",
+    "status": "draft",
+    "highlight": "15:40 Shibuya SKY sunset slot & Shigeru Ban transparent glass toilets",
+    "moodWeather": "16°C · Clear blue autumn sky",
+    "steps": "24,800 steps",
+    "content": "Started at 06:45 AM under the golden ginkgo tunnel of Meiji Jingu Gaien, wandered Shinjuku Gyoen's Maple Mountain, walked the architectural Tokyo Toilet trail from Harajuku into Shibuya, and reached Shibuya SKY at 15:20 for the 15:40 sunset slot."
+  },
+  {
+    "dayId": "day4",
+    "dayLabel": "Day 4",
+    "dateStr": "Nov 20, 2026",
+    "placeHeading": "Fujikawaguchiko — Fuji Excursion 93, Chureito Pagoda & Maple Corridor",
+    "status": "draft",
+    "highlight": "Chureito Pagoda framing snow-capped Mt. Fuji & Momiji Kairo night light-up",
+    "moodWeather": "12°C day / 2°C crisp mountain night",
+    "steps": "18,200 steps",
+    "content": "Rode Car 3 (Seats 6A & 6B) on Fuji Excursion 93 from Shinjuku Platform 9 straight to Kawaguchiko. Climbed to Chureito Pagoda in afternoon sun, checked into Seminar Plaza Royal Fuji at 16:00, and walked the illuminated Maple Corridor."
+  },
+  {
+    "dayId": "day5",
+    "dayLabel": "Day 5",
+    "dateStr": "Nov 21, 2026",
+    "placeHeading": "Lake Kawaguchiko ➔ Kyoto — Hikari 713, Gion Corner & Kodai-ji Illumination",
+    "status": "draft",
+    "highlight": "Mirror Mt. Fuji at 06:25 sunrise & 18:00 Maiko performance at Gion Corner",
+    "moodWeather": "1°C Fuji dawn ➔ 16°C Kyoto",
+    "steps": "19,400 steps",
+    "content": "Caught the sunrise reflection on Lake Kawaguchiko, took the 10:20 Bus 0108-1 to Mishima North, and rode Hikari 713 (Car 14, Seats 16D/16E) into Kyoto. Checked into Le Lion d'Or at 16:05, watched the 18:00 show at Gion Corner, and visited Kodai-ji's night illumination."
+  },
+  {
+    "dayId": "day6",
+    "dayLabel": "Day 6",
+    "dateStr": "Nov 22, 2026",
+    "placeHeading": "Kyoto — Hokan-ji Sunrise, Kiyomizu-dera, Nijo Castle, Philosopher's Path & Eikan-do",
+    "status": "draft",
+    "highlight": "Empty 06:15 AM Sannenzaka cobblestones & Eikan-do's 3,000 illuminated maples",
+    "moodWeather": "16°C / 8°C · Peak red Momiji foliage",
+    "steps": "26,000 steps",
+    "content": "Watched sunrise at Hokan-ji Pagoda and Kiyomizu-dera before crowds arrived, toured Nijo Castle at 08:45 opening, dropped bags at Rinn Gion Shinbashi, ate through Nishiki Market, walked Philosopher's Path from Ginkaku-ji to Nanzen-ji, and ended at Eikan-do's night illumination."
+  },
+  {
+    "dayId": "day7",
+    "dayLabel": "Day 7",
+    "dateStr": "Nov 23, 2026",
+    "placeHeading": "Kyoto — Fushimi Inari Sunrise, Tofuku-ji, Kinkaku-ji & Arashiyama",
+    "status": "draft",
+    "highlight": "Tsutenkyo Bridge at Tofuku-ji at 08:30 AM & Golden Pavilion in midday sun",
+    "moodWeather": "16°C / 7°C · Bright sunshine",
+    "steps": "24,200 steps",
+    "content": "Hiked Fushimi Inari at 06:15 sunrise, stood over Tofuku-ji's sea of red maples at 08:30, dropped bags at Hotel SUI Kyoto Kiyomizu, picked up our JR-West Kansai-Hiroshima Pass at Kyoto Station, and visited Kinkaku-ji and Arashiyama."
+  },
+  {
+    "dayId": "day8",
+    "dayLabel": "Day 8",
+    "dateStr": "Nov 24, 2026",
+    "placeHeading": "Kyoto Northern Mountains — Kurama Temple, Kifune Lantern Stairs & Momiji Tunnel",
+    "status": "draft",
+    "highlight": "Kifune Shrine lantern-lit stairs at dusk & Eizan train lights-off Momiji Tunnel!",
+    "moodWeather": "13°C / 4°C in Kibune mountain gorge",
+    "steps": "19,800 steps",
+    "content": "Rode the Eizan train up to Kurama Temple, crossed to Kifune Shrine for the water fortune slip and watched the vermilion lanterns light up along the stone stairs at 16:47 sunset, then rode the Eizan train back through the glowing Momiji Tunnel!"
+  },
+  {
+    "dayId": "day9",
+    "dayLabel": "Day 9",
+    "dateStr": "Nov 25, 2026",
+    "placeHeading": "Nara & Osaka — Nara Deer Park, Todai-ji & Dotonbori Neon Night",
+    "status": "draft",
+    "highlight": "Bowing deer under autumn leaves in Nara & Takoyaki in Dotonbori",
+    "moodWeather": "17°C / 9°C · Sunny & mild",
+    "steps": "20,600 steps",
+    "content": "Used our JR Pass on the Miyakoji Rapid to Nara, stored bags in JR Nara lockers, fed the deer and marvelled at Todai-ji, then rode the Yamatoji Rapid + Midosuji Line to check into APA Hommachi Tower at 15:12 before Dotonbori."
+  },
+  {
+    "dayId": "day10",
+    "dayLabel": "Day 10",
+    "dateStr": "Nov 26, 2026",
+    "placeHeading": "Hiroshima & Miyajima — Mizuho 601, Floating Torii, Peace Park & Nozomi 36",
+    "status": "draft",
+    "highlight": "08:20 AM crowd-free Miyajima Floating Torii & Momijidani Maple Valley",
+    "moodWeather": "17°C / 9°C · Clear Seto Inland Sea views",
+    "steps": "22,900 steps",
+    "content": "Boarded Mizuho 601 at 06:00 AM (Car 4, Seats 7A/7B), caught the 08:10 JR Ferry to Miyajima Island, explored Itsukushima Shrine and Momijidani Park, visited the Atomic Bomb Dome & Peace Museum, and rode Nozomi 36 (15:00 -> 16:43) back to Osaka."
+  },
+  {
+    "dayId": "day11",
+    "dayLabel": "Day 11",
+    "dateStr": "Nov 27, 2026",
+    "placeHeading": "Okayama & Osaka Castle — Korakuen Garden, Crow Castle & Golden Hour Keep",
+    "status": "draft",
+    "highlight": "Okayama Korakuen at 08:00 AM opening & reaching Osaka Castle by 13:30!",
+    "moodWeather": "16°C / 7°C · Sunny skies",
+    "steps": "21,400 steps",
+    "content": "Took Mizuho 601 (06:00–06:50, Car 5, Seats 7D/8D), entered Korakuen Garden at 08:00 AM and Okayama Castle at 09:45, rode Sakura 746 (12:14–12:59, Seats 9D/11D) back to Shin-Osaka, and reached Osaka Castle at 13:30 for afternoon sun and golden hour."
+  },
+  {
+    "dayId": "day12",
+    "dayLabel": "Day 12",
+    "dateStr": "Nov 28, 2026",
+    "placeHeading": "Osaka ➔ Tokyo — Nozomi 18, Tokyo Tower Sunset & teamLab Borderless (17:30)",
+    "status": "draft",
+    "highlight": "Daytime Mt. Fuji view from Nozomi 18 Seat 7E/8E & teamLab Borderless at 17:30",
+    "moodWeather": "16°C / 8°C · Crisp Tokyo evening",
+    "steps": "17,900 steps",
+    "content": "Rode Nozomi 18 (12:06–14:33, Car 3, Seats 7E/8E) back to Tokyo, checked into Hotel Livemax Ningyocho at 15:05, watched the 16:28 sunset behind Zojo-ji and Tokyo Tower, and walked 11 mins to Azabudai Hills for our 17:30 teamLab Borderless immersion."
+  },
+  {
+    "dayId": "day13",
+    "dayLabel": "Day 13",
+    "dateStr": "Nov 29, 2026",
+    "placeHeading": "Tokyo — Tsukiji Outer Market, Rikugien Maple Garden & Ginza Shopping",
+    "status": "draft",
+    "highlight": "Peak late-November maple reflections in Rikugien Pond",
+    "moodWeather": "15°C / 8°C · Clear & sunny",
+    "steps": "20,100 steps",
+    "content": "Breakfast at Tsukiji Outer Market, morning sunlight photography at Rikugien Gardens (09:00 opening), and final tax-free shopping in Ginza before packing our suitcases at Ningyocho."
+  },
+  {
+    "dayId": "day14",
+    "dayLabel": "Day 14",
+    "dateStr": "Nov 30 – Dec 1, 2026",
+    "placeHeading": "Tokyo Haneda ➔ Delhi (DEL T3) ➔ Bengaluru — Journey Home",
+    "status": "draft",
+    "highlight": "Direct 40-min train from Ningyocho to Haneda T3 & smooth DEL T3 self-transfer",
+    "moodWeather": "15°C Tokyo morning",
+    "steps": "9,200 steps",
+    "content": "Used the Exit A6 elevator 49m from Hotel Livemax to board the 07:55 direct Airport Express to Haneda T3. Flew AI-357 (11:45–18:20) to Delhi T3, completed our 3h 10m self-transfer, and landed back at Bengaluru T2 at 00:25 AM on Dec 1!"
+  }
+]

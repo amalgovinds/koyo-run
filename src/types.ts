@@ -75,6 +75,8 @@ export interface JournalEntry {
   content: string
 }
 
+export type LeafMode = 'breeze' | 'calm' | 'paused'
+
 export interface Stay {
   id: string
   name: string

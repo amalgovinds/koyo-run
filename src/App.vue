@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { navTabs } from '@/data/navTabs'
+import MomijiCanvas from '@/components/MomijiCanvas.vue'
+import type { LeafMode } from '@/types'
 import { useTripClock } from '@/composables/useTripClock'
+import { navTabs } from '@/data/navTabs'
 import type { TabId } from '@/types'
 
 const route = useRoute()
 const { currentDay } = useTripClock()
+const leafMode = ref<LeafMode>('breeze')
 
 const isActive = (id: TabId) => route.name === id
 const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
@@ -76,6 +80,7 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
         </div>
       </div>
     </div>
+    <MomijiCanvas :mode="leafMode" />
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
       <RouterView />
     </main>
