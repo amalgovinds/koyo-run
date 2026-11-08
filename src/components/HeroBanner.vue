@@ -1,130 +1,141 @@
+<!-- src/components/HeroBanner.vue -->
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { LeafMode, WeatherKey } from '@/types'
-import { ASCII_FRAME_COUNT, heroAsciiFrames } from '@/data/ascii'
-import { decodeWmo } from '@/data/weather'
+import { computed, onMounted } from 'vue'
+import { heroAsciiFrames } from '@/data/ascii'
 import { locationByKey } from '@/data/locations'
+import { decodeWmo } from '@/data/weather'
+import { useAsciiTicker } from '@/composables/useAsciiTicker'
+import { useToast } from '@/composables/useToast'
 import { useTripClock } from '@/composables/useTripClock'
 import { useWeather } from '@/composables/useWeather'
+import type { LeafMode, WeatherKey } from '@/types'
 
-defineProps<{
-  leafMode: LeafMode
-}>()
+// v-model from App.vue: <HeroBanner v-model="leafMode" />
+const leafMode = defineModel<LeafMode>({ default: 'breeze' })
 
-const emit = defineEmits<{
-  'update:leafMode': [mode: LeafMode]
-}>()
+const LEAF_OPTIONS: { mode: LeafMode; label: string }[] = [
+  { mode: 'breeze', label: '🍁 Breeze' },
+  { mode: 'calm', label: '🍂 Calm' },
+  { mode: 'paused', label: '⏸ Paused' },
+]
 
-const { currentDay, formattedTime, progressPercent, activeCheckpointText, daylightPhase } =
-  useTripClock()
+const { frame } = useAsciiTicker()
+const { currentDay, activeCheckpointText } = useTripClock()
+const { weatherMap, loading, error, fetchAll } = useWeather()
+const { showToast } = useToast()
 
-const { weatherMap, loading, fetchAll } = useWeather()
-
-const frameIdx = ref(0)
-let ticker: ReturnType<typeof setInterval> | null = null
-
-onMounted(() => {
-  if (Object.keys(weatherMap.value).length === 0 && !loading.value) {
-    fetchAll()
-  }
-  ticker = setInterval(() => {
-    frameIdx.value = (frameIdx.value + 1) % ASCII_FRAME_COUNT
-  }, 850)
-})
-
-onUnmounted(() => {
-  if (ticker) clearInterval(ticker)
-})
-
-const currentHeroAscii = computed(() => heroAsciiFrames[frameIdx.value] ?? heroAsciiFrames[0] ?? '')
+const asciiBanner = computed(() => heroAsciiFrames[frame.value] ?? '')
 
 const activeWeatherKey = computed(() => (currentDay.value.weatherKey as WeatherKey) || 'tokyo')
 
 const activeWeather = computed(() => weatherMap.value[activeWeatherKey.value])
 
-const activeLocationName = computed(
+const activeCityName = computed(
   () => locationByKey[activeWeatherKey.value]?.name ?? currentDay.value.cityShort,
 )
 
-const leafModes: { mode: LeafMode; label: string }[] = [
-  { mode: 'breeze', label: '🍁 Breeze' },
-  { mode: 'calm', label: '🍂 Calm' },
-  { mode: 'paused', label: '⏸ Paused' },
-]
+onMounted(() => {
+  if (Object.keys(weatherMap.value).length === 0 && !loading.value) {
+    fetchAll()
+  }
+})
+
+async function syncWeather(): Promise<void> {
+  await fetchAll()
+  if (error.value) {
+    showToast(`Weather sync failed: ${error.value}`)
+  } else {
+    showToast('Synced live Open-Meteo weather across all 8 Japanese stops.')
+  }
+}
 </script>
 
 <template>
   <header
-    class="relative overflow-hidden border-b border-washi-border bg-linear-to-b from-[#F5E6D3] via-[#FAF2E6] to-[#FAF6EE]"
+    class="overflow-hidden border-b border-washi-border bg-linear-to-b from-[#F5E6D3] via-[#FAF2E6] to-[#FAF6EE]"
   >
     <div class="mx-auto max-w-6xl px-4 pt-5 pb-2 sm:px-6">
-      <!-- Top Editorial Masthead Row -->
-      <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="relative z-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <!-- Masthead -->
         <div class="space-y-1.5">
           <div
-            class="flex flex-wrap items-center gap-2 font-mono text-xs font-semibold tracking-widest text-washi-momiji"
+            class="inline-flex items-center gap-2 font-mono text-xs font-semibold tracking-widest text-washi-momiji uppercase"
           >
-            <span>AUTUMN KOYO RUN · NOV 16 – DEC 1, 2026</span>
-            <span class="rounded-full px-2 py-0.5 text-[11px]" :class="daylightPhase.classes">
-              {{ daylightPhase.icon }} {{ daylightPhase.label }} · {{ formattedTime }} JST
-            </span>
+            <span class="h-2 w-2 rounded-full bg-washi-momiji"></span>
+            <span>Autumn Koyo Run · Nov 16 – Dec 1, 2026</span>
           </div>
-
           <div class="flex flex-wrap items-baseline gap-3">
             <h1
               class="font-serif text-3xl font-extrabold tracking-tight text-washi-ink sm:text-4xl lg:text-5xl"
             >
               日本紅葉紀行 <span class="font-normal text-washi-momiji italic">Koyo ’26</span>
             </h1>
-            <span class="hanko-seal rounded px-2 py-0.5 text-xs">
-              旅のしおり · {{ progressPercent }}%
-            </span>
+            <span class="hanko-seal rounded px-2 py-0.5 text-xs">旅のしおり</span>
           </div>
-
           <p class="max-w-xl text-xs text-washi-umber sm:text-sm">
-            Sunrise-to-sunset rail and foliage companion across Tokyo, Kawaguchiko, Kyoto, Nara,
-            Osaka, Hiroshima and Okayama.
+            Sunrise-to-sunset rail &amp; foliage companion across <strong>Tokyo</strong>,
+            <strong>Kawaguchiko</strong>, <strong>Kyoto</strong>, <strong>Nara</strong>,
+            <strong>Osaka</strong>, <strong>Hiroshima</strong> &amp; <strong>Okayama</strong>.
           </p>
         </div>
 
-        <!-- Right Controls: Live ASCII Strip + Canopy Mode + Weather Sync -->
-        <div class="flex flex-col items-end gap-2">
-          <pre
-            class="hidden rounded-lg border border-washi-border bg-[#2B2520] px-3 py-1.5 font-mono text-[11px] leading-tight text-[#FAF6EE] shadow-xs sm:block select-none"
-            >{{ currentHeroAscii }}</pre>
+        <!-- Controls -->
+        <div
+          class="flex flex-col items-start gap-2 sm:flex-row sm:items-center md:flex-col md:items-end"
+        >
+          <div
+            class="rounded-xl border border-washi-border bg-[#F3ECE0]/90 px-3 py-1.5 font-mono text-[10px] leading-tight whitespace-pre text-washi-umber shadow-sm select-none"
+            aria-hidden="true"
+          >
+            {{ asciiBanner }}
+          </div>
 
-          <div class="flex flex-wrap items-center gap-1.5">
-            <div class="inline-flex rounded-full border border-washi-border bg-[#FAF6EE] p-0.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- 3-Way Segmented Pill: 🍁 Breeze | 🍂 Calm | ⏸ Paused -->
+            <div
+              class="inline-flex items-center rounded-full border border-washi-border bg-[#FFFDF9] p-0.5 shadow-sm"
+              role="group"
+              aria-label="Maple leaf animation mode"
+            >
               <button
-                v-for="item in leafModes"
-                :key="item.mode"
+                v-for="opt in LEAF_OPTIONS"
+                :key="opt.mode"
                 type="button"
-                class="rounded-full px-2.5 py-1 font-mono text-[11px] transition-colors"
+                class="rounded-full px-2.5 py-1 font-mono text-[11px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-washi-momiji"
                 :class="
-                  leafMode === item.mode
-                    ? 'bg-washi-momiji font-semibold text-white'
-                    : 'text-washi-umber hover:text-washi-ink'
+                  leafMode === opt.mode
+                    ? 'bg-washi-momiji font-semibold text-white shadow-xs'
+                    : 'text-washi-umber hover:bg-washi-warm/70 hover:text-washi-ink'
                 "
-                @click="emit('update:leafMode', item.mode)"
+                @click="leafMode = opt.mode"
               >
-                {{ item.label }}
+                {{ opt.label }}
               </button>
             </div>
 
+            <!-- Live Weather Pill: ⛅ Tokyo 10°C -->
             <button
               type="button"
-              class="inline-flex items-center gap-1 rounded-full border border-washi-border bg-[#FAF6EE] px-2.5 py-1 font-mono text-[11px] text-washi-ink hover:border-washi-momiji"
+              class="flex items-center gap-1.5 rounded-full border border-washi-border bg-[#FFFDF9] px-3 py-1 font-mono text-[11px] font-medium text-washi-ink shadow-sm transition hover:bg-washi-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-washi-momiji disabled:opacity-60"
               :disabled="loading"
-              @click="fetchAll"
+              @click="syncWeather"
             >
-              <span v-if="activeWeather">
-                {{ decodeWmo(activeWeather.code).emoji }} {{ activeLocationName }}
-                {{ activeWeather.temp }}°C
-              </span>
-              <span v-else>{{ loading ? 'Syncing...' : '↻ Weather' }}</span>
+              <template v-if="activeWeather && !loading">
+                <span>{{ decodeWmo(activeWeather.code).emoji }}</span>
+                <span>{{ activeCityName }} {{ activeWeather.temp }}°C</span>
+              </template>
+              <template v-else>
+                <i
+                  class="ph-bold ph-arrows-clockwise"
+                  :class="{ 'animate-spin text-washi-momiji': loading }"
+                  aria-hidden="true"
+                ></i>
+                <span>{{ loading ? 'Syncing...' : 'Live Weather' }}</span>
+              </template>
             </button>
           </div>
 
+          <!-- Active Location & Checkpoint Readout -->
           <div class="font-mono text-[11px] text-washi-umber">
             📍 {{ currentDay.shortLabel }} · Now:
             <strong class="text-washi-ink">{{ activeCheckpointText }}</strong>
@@ -132,119 +143,112 @@ const leafModes: { mode: LeafMode; label: string }[] = [
         </div>
       </div>
 
-      <!-- Ukiyo-e Woodblock SVG Horizon (Centered Sun Over Mount Fuji) -->
-      <div class="relative mt-2 h-24 w-full select-none sm:h-32">
-        <svg
-          viewBox="0 0 1200 180"
-          class="h-full w-full overflow-visible"
-          preserveAspectRatio="xMidYBottom slice"
-          aria-hidden="true"
-        >
+      <!-- Ukiyo-e horizon: Hinomaru sun, Mt. Fuji, pagoda, torii and a gliding Shinkansen -->
+      <div
+        class="pointer-events-none mt-2 h-28 w-full overflow-hidden select-none sm:h-36"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 1200 165" class="h-full w-full" preserveAspectRatio="xMidYBottom slice">
           <defs>
-            <linearGradient id="hinomaruSun" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#D94126" stop-opacity="0.92" />
-              <stop offset="100%" stop-color="#B93829" stop-opacity="0.78" />
+            <linearGradient id="hinomaruGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#D94E34" stop-opacity="0.82" />
+              <stop offset="100%" stop-color="#E89954" stop-opacity="0.25" />
             </linearGradient>
-            <linearGradient id="fujiSlope" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#3B4958" />
-              <stop offset="68%" stop-color="#4F5D6B" />
-              <stop offset="100%" stop-color="#EAE1D0" stop-opacity="0.2" />
+            <linearGradient id="fujiBody" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#3E4E63" />
+              <stop offset="65%" stop-color="#6B7888" />
+              <stop offset="100%" stop-color="#F3ECE0" stop-opacity="0.2" />
+            </linearGradient>
+            <linearGradient id="distantHills" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#C88A5A" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#FAF6EE" stop-opacity="0" />
             </linearGradient>
           </defs>
 
-          <!-- Centered Crimson Sun Above Mount Fuji Summit (cx=600) -->
-          <circle
-            cx="600"
-            cy="52"
-            r="54"
-            fill="none"
-            stroke="#D94126"
-            stroke-width="1"
-            stroke-dasharray="4 4"
-            opacity="0.35"
-          />
-          <circle
-            cx="600"
-            cy="52"
-            r="44"
-            fill="none"
-            stroke="#D94126"
-            stroke-width="1"
-            opacity="0.25"
-          />
-          <circle cx="600" cy="52" r="36" fill="url(#hinomaruSun)" />
+          <!-- Rising crimson sun -->
+          <circle cx="600" cy="65" r="54" fill="url(#hinomaruGrad)" />
 
-          <!-- Distant Foothills -->
-          <path
-            d="M0 165 Q 210 118, 430 165 T 900 160 T 1200 165 L 1200 180 L 0 180 Z"
-            fill="#E5DBC8"
-            opacity="0.75"
-          />
-
-          <!-- Mount Fuji Centered at x=600 -->
-          <path
-            d="M 355 168 Q 515 140, 568 68 L 632 68 Q 685 140, 845 168 Z"
-            fill="url(#fujiSlope)"
-          />
-          <!-- Snow Cap -->
-          <path
-            d="M 568 68 L 632 68 Q 646 92, 658 106 L 638 98 L 622 110 L 605 95 L 590 110 L 575 96 L 542 106 Q 555 90, 568 68 Z"
-            fill="#FAF6EE"
-          />
-
-          <!-- Left: 5-Story Kyoto Pagoda (Hokan-ji) -->
-          <g transform="translate(150, 58)" fill="#2B2520" opacity="0.86">
-            <rect x="28" y="0" width="4" height="18" />
-            <polygon points="10,22 50,22 42,16 18,16" />
-            <rect x="20" y="22" width="20" height="8" />
-            <polygon points="7,35 53,35 44,29 16,29" />
-            <rect x="18" y="35" width="24" height="9" />
-            <polygon points="4,49 56,49 46,43 14,43" />
-            <rect x="16" y="49" width="28" height="10" />
-            <polygon points="1,64 59,64 48,58 12,58" />
-            <rect x="15" y="64" width="30" height="11" />
-            <polygon points="-2,81 62,81 50,74 10,74" />
-            <rect x="13" y="81" width="34" height="28" />
+          <!-- Drifting mist bands -->
+          <g class="cloud-drift" opacity="0.65">
+            <rect x="440" y="68" width="110" height="7" rx="3.5" fill="#FAF6EE" />
+            <rect x="665" y="52" width="135" height="8" rx="4" fill="#FAF6EE" />
+            <rect x="260" y="82" width="95" height="6" rx="3" fill="#FAF6EE" />
           </g>
 
-          <!-- Right: Vermilion Shinto Torii Gate -->
-          <g transform="translate(975, 86)">
-            <path d="M 0 12 Q 40 4, 80 12 L 77 19 Q 40 12, 3 19 Z" fill="#B93829" />
-            <rect x="8" y="25" width="64" height="6" fill="#B93829" />
-            <rect x="37" y="15" width="6" height="12" fill="#2B2520" />
-            <rect x="16" y="17" width="7" height="65" fill="#B93829" />
-            <rect x="57" y="17" width="7" height="65" fill="#B93829" />
-            <rect x="14" y="74" width="11" height="8" fill="#2B2520" />
-            <rect x="55" y="74" width="11" height="8" fill="#2B2520" />
-          </g>
+          <!-- Distant hills -->
+          <path
+            d="M0,150 Q180,95 390,145 T820,135 T1200,148 L1200,165 L0,165 Z"
+            fill="url(#distantHills)"
+          />
 
-          <!-- Viaduct & Gliding Shinkansen -->
-          <line x1="0" y1="168" x2="1200" y2="168" stroke="#C5B9A5" stroke-width="2" />
-          <g class="shinkansen-glide">
+          <!-- Mount Fuji and snow cap -->
+          <path d="M350,152 Q515,132 568,38 L632,38 Q685,132 850,152 Z" fill="url(#fujiBody)" />
+          <path
+            d="M568,38 L632,38 L654,74 L634,66 L619,82 L600,64 L583,80 L569,66 L546,74 Z"
+            fill="#FFFDF9"
+          />
+
+          <!-- Five-storey pagoda -->
+          <g transform="translate(115, 42)" fill="#2B211C">
+            <rect x="28.5" y="0" width="3" height="16" />
+            <path d="M12,18 Q30,13 48,18 L43,23 L17,23 Z" />
+            <rect x="21" y="23" width="18" height="6" />
+            <path d="M9,31 Q30,26 51,31 L45,36 L15,36 Z" />
+            <rect x="19" y="36" width="22" height="7" />
+            <path d="M6,45 Q30,40 54,45 L47,50 L13,50 Z" />
+            <rect x="17" y="50" width="26" height="7" />
+            <path d="M3,59 Q30,54 57,59 L49,64 L11,64 Z" />
+            <rect x="15" y="64" width="30" height="8" />
+            <path d="M0,74 Q30,68 60,74 L52,80 L8,80 Z" />
+            <rect x="14" y="80" width="32" height="30" />
+          </g>
+          <circle cx="95" cy="78" r="22" fill="#C83E2B" opacity="0.85" />
+          <circle cx="118" cy="56" r="18" fill="#D96B27" opacity="0.85" />
+          <circle cx="182" cy="82" r="20" fill="#B83222" opacity="0.8" />
+
+          <!-- Vermilion torii gate and stone lantern -->
+          <g transform="translate(965, 58)">
+            <path d="M-8,8 Q45,0 98,8 L94,15 Q45,8 -4,15 Z" fill="#C83E2B" />
+            <rect x="2" y="24" width="86" height="6" rx="1" fill="#C83E2B" />
+            <rect x="41" y="13" width="8" height="12" fill="#1E1916" />
+            <rect x="12" y="14" width="7" height="80" fill="#C83E2B" />
+            <rect x="71" y="14" width="7" height="80" fill="#C83E2B" />
+            <rect x="9" y="86" width="13" height="8" fill="#1E1916" />
+            <rect x="68" y="86" width="13" height="8" fill="#1E1916" />
+            <g transform="translate(106, 56)">
+              <path d="M0,8 L18,8 L14,2 L4,2 Z" fill="#5C4E43" />
+              <rect x="4" y="8" width="10" height="9" fill="#3E3229" />
+              <circle cx="9" cy="12.5" r="4" fill="#F59E0B" class="toro-glow" />
+              <rect x="2" y="17" width="14" height="3" fill="#5C4E43" />
+              <rect x="6" y="20" width="6" height="14" fill="#5C4E43" />
+              <rect x="2" y="34" width="14" height="4" fill="#3E3229" />
+            </g>
+          </g>
+          <circle cx="945" cy="114" r="19" fill="#D96B27" opacity="0.85" />
+          <circle cx="1095" cy="100" r="24" fill="#C83E2B" opacity="0.85" />
+
+          <!-- Viaduct and gliding bullet train -->
+          <line x1="0" y1="152" x2="1200" y2="152" stroke="#BDA98E" stroke-width="2" />
+          <g class="shinkansen-runner">
             <path
-              d="M 20 166 L 105 166 Q 125 166, 132 160 L 112 158 L 20 158 Z"
-              fill="#FAF6EE"
-              stroke="#2E6F5E"
-              stroke-width="1.5"
+              d="M0,149 L155,149 L178,149 Q168,140 148,140 L0,140 Z"
+              fill="#FFFDF9"
+              stroke="#3E4E63"
+              stroke-width="1.2"
             />
-            <line x1="22" y1="163" x2="122" y2="163" stroke="#2E6F5E" stroke-width="1.5" />
+            <line x1="2" y1="146" x2="165" y2="146" stroke="#1D4ED8" stroke-width="1.8" />
+            <rect x="15" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="28" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="41" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="60" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="73" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="86" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="105" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="118" y="142" width="8" height="2.5" fill="#3E4E63" />
+            <rect x="131" y="142" width="8" height="2.5" fill="#3E4E63" />
           </g>
         </svg>
       </div>
     </div>
   </header>
 </template>
-
-<style scoped>
-.shinkansen-glide {
-  animation: glideTrain 18s linear infinite;
-}
-@keyframes glideTrain {
-  0% {
-    transform: translateX(-180px);
-  }
-  100% {
-    transform: translateX(1260px);
-  }
-}
-</style>

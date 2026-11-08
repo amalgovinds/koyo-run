@@ -19,7 +19,7 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
 <template>
   <div class="relative z-30 flex min-h-screen flex-col">
     <!-- Masthead. Later: hero SVG, ASCII banner, leaf-mode and weather buttons go here. -->
-    <HeroBanner v-model:leaf-mode="leafMode" />
+    <HeroBanner v-model="leafMode" />
     <!-- Sticky nav: a direct child of the page container, NOT of <header>.
       A sticky element only sticks within its parent, so inside <header> it scrolls away. -->
     <div
