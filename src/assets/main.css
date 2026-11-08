@@ -20,3 +20,226 @@
 
 /* paste custom classes below: .hanko-seal, .ticket-stub,
     .jr-ticket-paper, .washi-tape, .notebook-ruled, keyframes, etc. */
+@layer base {
+  body {
+    background-color: var(--color-washi-cream);
+    color: var(--color-washi-ink);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    /* Warm washi paper: two soft colour washes plus a fine dot grain */
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(200, 62, 43, 0.06), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(217, 107, 39, 0.07), transparent 45%),
+      radial-gradient(#d5c7b2 0.65px, transparent 0.65px);
+    background-size:
+      100% 100%,
+      100% 100%,
+      24px 24px;
+  }
+
+  ::selection {
+    background: var(--color-washi-momiji);
+    color: #fff;
+  }
+
+  input[type='range'] {
+    accent-color: var(--color-washi-momiji);
+  }
+}
+
+@layer components {
+  /* Vertical Japanese (tategaki) typography */
+  .tategaki {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 0.22em;
+  }
+
+  /* Red hanko stamp */
+  .hanko-seal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2.5px solid #c83e2b;
+    color: #c83e2b;
+    font-family: var(--font-serif);
+    font-weight: 800;
+    transform: rotate(-7deg);
+    background: rgba(200, 62, 43, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(200, 62, 43, 0.25);
+    letter-spacing: 0.06em;
+  }
+
+  /* Perforated boarding pass / rail ticket with side notches */
+  .ticket-stub {
+    position: relative;
+    background: #fffdf9;
+    border: 1px solid #d5c7b2;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px -10px rgba(62, 45, 32, 0.08);
+  }
+  .ticket-stub::before,
+  .ticket-stub::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-washi-cream);
+    border: 1px solid #d5c7b2;
+    border-radius: 9999px;
+    transform: translateY(-50%);
+    z-index: 10;
+  }
+  .ticket-stub::before {
+    left: -13px;
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+  }
+  .ticket-stub::after {
+    right: -13px;
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+  }
+
+  /* JR green reserved-seat ticket paper (must stay after .ticket-stub) */
+  .jr-ticket-paper {
+    background-color: #eff7f2;
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(58, 107, 82, 0.03) 0px,
+      rgba(58, 107, 82, 0.03) 2px,
+      transparent 2px,
+      transparent 8px
+    );
+    border: 1.5px solid #9bc1ae;
+  }
+
+  /* Washi tape strip on top of a postcard */
+  .washi-tape {
+    position: relative;
+  }
+  .washi-tape::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-1.5deg);
+    width: 92px;
+    height: 22px;
+    background: rgba(217, 107, 39, 0.22);
+    border-left: 2px dashed rgba(180, 85, 25, 0.35);
+    border-right: 2px dashed rgba(180, 85, 25, 0.35);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+  }
+
+  /* Ruled goshuincho notebook paper */
+  .notebook-ruled {
+    background-color: #fffdf8;
+    background-image: linear-gradient(transparent 31px, #e9dfc9 32px);
+    background-size: 100% 32px;
+    line-height: 32px;
+  }
+
+  /* Dotted treasure-trail line */
+  .treasure-dotted-bg {
+    background-image: linear-gradient(to bottom, #c7b69e 45%, rgba(255, 255, 255, 0) 0%);
+    background-position: center;
+    background-size: 4px 18px;
+    background-repeat: repeat-y;
+  }
+  .treasure-dotted-active {
+    background-image: linear-gradient(to bottom, #c83e2b 55%, rgba(217, 107, 39, 0.2) 0%);
+    background-position: center;
+    background-size: 4px 18px;
+    background-repeat: repeat-y;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Shinkansen gliding across the hero horizon */
+@keyframes shinkansenGlide {
+  0% {
+    transform: translateX(-260px);
+  }
+  100% {
+    transform: translateX(1450px);
+  }
+}
+.shinkansen-runner {
+  animation: shinkansenGlide 16s linear infinite;
+}
+
+/* Drifting mist bands */
+@keyframes cloudDriftSlow {
+  0%,
+  100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(36px);
+  }
+}
+.cloud-drift {
+  animation: cloudDriftSlow 11s ease-in-out infinite;
+}
+
+/* Flickering stone lantern */
+@keyframes lanternFlicker {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.12);
+  }
+}
+.toro-glow {
+  animation: lanternFlicker 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Active timeline node pulse */
+@keyframes activePinPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(200, 62, 43, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(200, 62, 43, 0);
+  }
+}
+.pin-pulse {
+  animation: activePinPulse 2s infinite;
+}
+
+/* Respect the OS reduce-motion setting */
+@media (prefers-reduced-motion: reduce) {
+  .shinkansen-runner {
+    animation: none;
+    transform: translateX(520px);
+  }
+  .cloud-drift,
+  .toro-glow,
+  .pin-pulse {
+    animation: none;
+  }
+}
+
+/* Warm scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f3ece0;
+}
+::-webkit-scrollbar-thumb {
+  background: #c7b69e;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c83e2b;
+}

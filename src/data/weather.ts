@@ -7,8 +7,8 @@ export interface WmoInfo {
 export function decodeWmo(code: number): WmoInfo {
   if (code === 0) return { emoji: '☀️', desc: 'Clear sky' }
   if (code <= 3) return { emoji: '⛅', desc: 'Partly cloudy' }
-  if (code <= 48) return { emoji: '🌫️', desc: 'Misty' }
+  if (code <= 48) return { emoji: '🌫️', desc: 'Misty / Foggy' }
   if (code <= 67) return { emoji: '🌧️', desc: 'Rain showers' }
   if (code <= 77) return { emoji: '❄️', desc: 'Mountain snow' }
-  return { emoji: '⛈️', desc: 'Showers' }
+  return { emoji: '⛈️', desc: 'Thunderstorms / Showers' }
 }
