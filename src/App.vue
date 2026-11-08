@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import HeroBanner from '@/components/HeroBanner.vue'
 import MomijiCanvas from '@/components/MomijiCanvas.vue'
 import type { LeafMode } from '@/types'
 import { useTripClock } from '@/composables/useTripClock'
@@ -18,27 +19,7 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
 <template>
   <div class="relative z-30 flex min-h-screen flex-col">
     <!-- Masthead. Later: hero SVG, ASCII banner, leaf-mode and weather buttons go here. -->
-    <header
-      class="border-b border-washi-border bg-linear-to-b from-[#F5E6D3] via-[#FAF2E6] to-[#FAF6EE]"
-    >
-      <div class="mx-auto max-w-6xl space-y-1.5 px-4 pt-5 pb-4 sm:px-6">
-        <p class="font-mono text-xs font-semibold tracking-widest text-washi-momiji">
-          Autumn Koyo Run · Nov 16 – Dec 1, 2026
-        </p>
-        <div class="flex flex-wrap items-baseline gap-3">
-          <h1
-            class="font-serif text-3xl font-extrabold tracking-tight text-washi-ink sm:text-4xl lg:text-5xl"
-          >
-            日本紅葉紀行 <span class="font-normal text-washi-momiji italic">Koyo ’26</span>
-          </h1>
-          <span class="hanko-seal rounded px-2 py-0.5 text-xs">旅のしおり</span>
-        </div>
-        <p class="max-w-xl text-xs text-washi-umber sm:text-sm">
-          Sunrise-to-sunset rail and foliage companion across Tokyo, Kawaguchiko, Kyoto, Nara,
-          Osaka, Hiroshima and Okayama.
-        </p>
-      </div>
-    </header>
+    <HeroBanner v-model:leaf-mode="leafMode" />
     <!-- Sticky nav: a direct child of the page container, NOT of <header>.
       A sticky element only sticks within its parent, so inside <header> it scrolls away. -->
     <div
