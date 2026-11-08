@@ -139,15 +139,20 @@ const squigglyPath = computed(() => {
           :class="idx % 2 === 0 ? 'md:mr-auto md:w-[82%]' : 'md:ml-auto md:w-[82%]'"
         >
           <article
-            class="rounded-xl border p-4 shadow-xs transition"
+            class="relative overflow-visible rounded-xl border p-4 shadow-xs transition"
             :class="
               getDayStatus(idx) === 'active'
-                ? 'border-2 border-washi-momiji bg-[#F5E6D3]/60'
+                ? 'current-day-pulse border-2 border-washi-momiji bg-[#F5E6D3]/60'
                 : getDayStatus(idx) === 'completed'
-                  ? 'border-washi-border bg-[#FAF6EE]/90'
+                  ? 'border-washi-border bg-[#FAF6EE]/50'
                   : 'border-washi-border/80 bg-[#FAF6EE]'
             "
           >
+            <div
+              v-if="getDayStatus(idx) === 'completed'"
+              class="absolute inset-0 z-[1] bg-[#FFF3E8]/55 pointer-events-none"
+            ></div>
+            <div v-if="getDayStatus(idx) === 'completed'" class="completed-stamp">済 COMPLETED</div>
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div class="flex items-start gap-3">
                 <!-- Node Circle -->
@@ -157,7 +162,7 @@ const squigglyPath = computed(() => {
                     getDayStatus(idx) === 'active'
                       ? 'border-washi-momiji bg-washi-momiji text-white'
                       : getDayStatus(idx) === 'completed'
-                        ? 'border-[#9BC1AE] bg-washi-jrgreen text-washi-jrink'
+                        ? 'border-[#D96B27] bg-white/85 text-[#D96B27]'
                         : 'border-washi-border bg-washi-warm text-washi-umber'
                   "
                 >
@@ -170,13 +175,7 @@ const squigglyPath = computed(() => {
                       {{ day.dateStr }}
                     </span>
                     <span
-                      v-if="getDayStatus(idx) === 'completed'"
-                      class="rounded border border-[#9BC1AE] bg-washi-jrgreen px-1.5 py-0.5 font-mono text-[10px] font-bold text-washi-jrink"
-                    >
-                      済 COMPLETED
-                    </span>
-                    <span
-                      v-else-if="getDayStatus(idx) === 'active'"
+                      v-if="getDayStatus(idx) === 'active'"
                       class="rounded bg-washi-momiji px-2 py-0.5 font-mono text-[10px] font-bold text-white animate-pulse"
                     >
                       📍 YOU ARE HERE
@@ -239,4 +238,43 @@ const squigglyPath = computed(() => {
     </div>
   </section>
 </template>
-ma
+
+<style scoped>
+.current-day-pulse {
+  animation: current-day-border 2s ease-in-out infinite;
+}
+
+@keyframes current-day-border {
+  0%,
+  100% {
+    border-color: rgba(185, 56, 41, 0.4);
+  }
+  50% {
+    border-color: rgba(185, 56, 41, 1);
+  }
+}
+
+.completed-stamp {
+  position: absolute;
+  top: 35px;
+  left: -62px;
+  z-index: 10;
+
+  width: 220px;
+  transform: rotate(-45deg);
+  text-align: center;
+
+  color: #169b46;
+  background: transparent;
+  border: none;
+
+  font-family: Georgia, serif;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  white-space: nowrap;
+
+  opacity: 1;
+  pointer-events: none;
+}
+</style>
