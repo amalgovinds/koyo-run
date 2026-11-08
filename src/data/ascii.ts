@@ -3,30 +3,23 @@ import type { CityDiorama, WeatherKey } from '@/types'
 
 // Every animation below has exactly this many frames.
 // Use it for the ticker: frameIdx = (frameIdx + 1) % ASCII_FRAME_COUNT
-export const ASCII_FRAME_COUNT = 4
+export const ASCII_FRAME_COUNT = 10
 
 // One source line per line of art. Backslashes must be doubled in normal strings.
 const art = (...lines: string[]) => lines.join('\n')
 
 export const heroAsciiFrames: string[] = [
-  art(
-    '   *  .      /\\        ⛩️   _____[🚄 N700S]==💨',
-    ' .   🍁    /🗻\\    ═══════╧══════════════╧═══',
-  ),
-  art(
-    ' .      *   /\\  *     ⛩️       _____[🚄 N700S]',
-    '   🍁     /🗻\\    ════════════╧══════════════',
-  ),
-  art(
-    '     *     /\\     🍁  ⛩️  _____[🚄 N700S]==💨 ',
-    ' *       /🗻\\    ════════╧══════════════╧════',
-  ),
-  art(
-    '  🍁   .   /\\   *     ⛩️     _____[🚄 N700S]  ',
-    '    *    /🗻\\    ══════════╧══════════════╧══',
-  ),
+  art('✧    目的地：日本    ✦', '🍁 ───────── 🚄 ─ 🍂'),
+  art('✦    目的地：日本    ✧', '🍁 ──────── 🚄 ── 🍂'),
+  art('⋆    目的地：日本    ⋆', '🍁 ─────── 🚄 ─── 🍂'),
+  art('✧    目的地：日本    ✦', '🍁 ────── 🚄 ──── 🍂'),
+  art('✦    目的地：日本    ✧', '🍁 ───── 🚄 ───── 🍂'),
+  art('⋆    目的地：日本    ⋆', '🍁 ──── 🚄 ────── 🍂'),
+  art('✧    目的地：日本    ✦', '🍁 ─── 🚄 ─────── 🍂'),
+  art('✦    目的地：日本    ✧', '🍁 ── 🚄 ──────── 🍂'),
+  art('⋆    目的地：日本    ⋆', '🍁 ─ 🚄 ───────── 🍂'),
+  art('✧    目的地：日本    ✦', '🍁  🚄 ────────── 🍂'),
 ]
-
 // Keyed by WeatherKey, so TypeScript errors if a city is missing.
 export const cityAsciiDioramas: Record<WeatherKey, CityDiorama> = {
   tokyo: {
