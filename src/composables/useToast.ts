@@ -1,25 +1,22 @@
 import { ref } from 'vue'
 
-const toastMessage = ref<string>('')
-let toastTimer: ReturnType<typeof setTimeout> | null = null
+// Module-level state: App.vue renders the toast, any view can trigger it.
+const toast = ref({ visible: false, message: '' })
+let timer: number | undefined
 
 export function useToast() {
-  function showToast(msg: string, duration = 2300) {
-    toastMessage.value = msg
-    if (toastTimer) clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => {
-      toastMessage.value = ''
-    }, duration)
+  function showToast(message: string): void {
+    toast.value = { visible: true, message }
+    window.clearTimeout(timer)
+    timer = window.setTimeout(() => {
+      toast.value.visible = false
+    }, 3800)
   }
 
-  function clearToast() {
-    if (toastTimer) clearTimeout(toastTimer)
-    toastMessage.value = ''
+  function hideToast(): void {
+    window.clearTimeout(timer)
+    toast.value.visible = false
   }
 
-  return {
-    toastMessage,
-    showToast,
-    clearToast,
-  }
+  return { toast, showToast, hideToast }
 }
