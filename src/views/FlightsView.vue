@@ -21,7 +21,7 @@ import { flightsData } from '@/data/bookings'
       <article
         v-for="flight in flightsData"
         :key="flight.id"
-        class="boarding-pass overflow-hidden rounded-xl border border-washi-border bg-[#FAF6EE] shadow-xs"
+        class="ticket-stub overflow-hidden rounded-xl border border-washi-border bg-[#FAF6EE] shadow-xs"
       >
         <!-- Top Strip -->
         <div

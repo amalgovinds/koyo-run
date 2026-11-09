@@ -20,7 +20,7 @@ import { transportsData } from '@/data/bookings'
       <article
         v-for="tr in transportsData"
         :key="tr.id"
-        class="jr-ticket rounded-xl border-2 border-[#9BC1AE] bg-washi-jrgreen/70 p-5 shadow-xs"
+        class="ticket-stub jr-ticket-paper rounded-xl border-2 border-[#9BC1AE] bg-washi-jrgreen/70 p-5 shadow-xs"
       >
         <div
           class="flex flex-wrap items-center justify-between gap-2 border-b border-[#9BC1AE] pb-2.5"

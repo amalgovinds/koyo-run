@@ -21,7 +21,7 @@ import { staysData } from '@/data/bookings'
       <article
         v-for="(stay, idx) in staysData"
         :key="stay.id"
-        class="flex flex-col justify-between rounded-xl border border-washi-border bg-[#FAF6EE] p-5 shadow-xs"
+        class="washi-tape flex flex-col justify-between rounded-xl border border-washi-border bg-[#FAF6EE] p-5 shadow-xs"
       >
         <div>
           <div

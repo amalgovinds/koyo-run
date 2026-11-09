@@ -17,6 +17,7 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
 </script>
 
 <template>
+  <MomijiCanvas :mode="leafMode" />
   <div class="relative z-30 flex min-h-screen flex-col">
     <!-- Masthead. Later: hero SVG, ASCII banner, leaf-mode and weather buttons go here. -->
     <HeroBanner v-model="leafMode" />
@@ -61,7 +62,6 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
         </div>
       </div>
     </div>
-    <MomijiCanvas :mode="leafMode" />
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
       <RouterView />
     </main>

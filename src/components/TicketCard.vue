@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <article
-    class="ticket-Stub relative flex flex-col justify-between overflow-hidden rounded-xl border border-washi-border bg-[#FAF6EE] p-5 shadow-xs transition hover:border-washi-momiji/60"
+    class="ticket-stub relative flex flex-col justify-between overflow-hidden rounded-xl border border-washi-border bg-[#FAF6EE] p-5 shadow-xs transition hover:border-washi-momiji/60"
   >
     <div>
       <!-- Top Stub Bar -->

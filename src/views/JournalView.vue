@@ -254,7 +254,7 @@ async function resetToRepo(): Promise<void> {
             v-model="activeEntry.content"
             rows="9"
             placeholder="Record your daily impressions, temple stamps, ramen bowls, and autumn foliage scenes..."
-            class="notebook-ruled w-full resize-y px-2 font-serif text-sm text-washi-ink focus:outline-none sm:text-base"
+            class="notebook-ruled w-full resize-y px-2 font-serif text-sm leading-8 text-washi-ink focus:outline-none sm:text-base"
             @input="touch"
           ></textarea>
           <div class="flex items-center justify-between pt-2 font-mono text-[11px] text-washi-bark">
