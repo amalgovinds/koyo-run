@@ -20,7 +20,7 @@ const {
   daylightPhase,
 } = useTripClock()
 
-const { weatherMap, loading, error, fetchAll } = useWeather()
+const { weatherMap, loading, error, fetchAll, getWeatherForDay } = useWeather()
 
 const asciiFrame = ref(0)
 let asciiTimer: ReturnType<typeof setInterval> | null = null
@@ -48,7 +48,7 @@ const currentAsciiArt = computed(
   () => currentDiorama.value.frames[asciiFrame.value] ?? currentDiorama.value.frames[0] ?? '',
 )
 
-const liveWeather = computed(() => weatherMap.value[currentWeatherKey.value])
+const liveWeather = computed(() => getWeatherForDay(currentDay.value))
 
 const locationInfo = computed(() => locationByKey[currentWeatherKey.value])
 
@@ -184,7 +184,8 @@ const weatherAlerts = computed(() => {
         >
           <div v-if="liveWeather">
             <div class="font-mono text-[11px] text-washi-umber uppercase">
-              LIVE OPEN-METEO · {{ locationInfo.name }} ({{ locationInfo.sub }})
+              { liveWeather.isForecast ? `DATE FORECAST (${currentDay.dateISO})` : 'LIVE OPEN-METEO'
+              }} · {{ locationInfo.name }} ({{ locationInfo.sub }})
             </div>
             <div class="mt-0.5 flex items-baseline gap-2">
               <span class="font-serif text-2xl font-bold text-washi-ink">

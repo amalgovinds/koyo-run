@@ -139,6 +139,9 @@ export interface WeatherEntry {
   max: number
   min: number
   code: number
+  dateISO?: string
+  isForecast?: boolean
+  byDate?: Record<string, WeatherEntry>
 }
 
 export type WeatherKey =

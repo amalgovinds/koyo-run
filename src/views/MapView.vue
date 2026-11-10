@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import type { WeatherKey } from '@/types'
 import { itineraryDays } from '@/data/itinerary'
 import { decodeWmo } from '@/data/weather'
 import { useTripClock } from '@/composables/useTripClock'
@@ -20,7 +19,7 @@ const {
   totalCheckpoints,
 } = useTripClock()
 
-const { weatherMap, loading, fetchAll } = useWeather()
+const { weatherMap, loading, fetchAll, getWeatherForDay } = useWeather()
 
 onMounted(() => {
   if (Object.keys(weatherMap.value).length === 0 && !loading.value) {
@@ -183,12 +182,13 @@ const squigglyPath = computed(() => {
 
                     <!-- Live Weather Pill -->
                     <span
-                      v-if="weatherMap[day.weatherKey as WeatherKey]"
+                      v-if="getWeatherForDay(day)"
                       class="rounded-full border border-washi-border bg-washi-warm px-2 py-0.5 font-mono text-[11px] text-washi-ink"
                     >
-                      {{ decodeWmo(weatherMap[day.weatherKey as WeatherKey]!.code).emoji }}
-                      {{ weatherMap[day.weatherKey as WeatherKey]!.temp }}°C (Rain
-                      {{ weatherMap[day.weatherKey as WeatherKey]!.rain }}mm)
+                      {{ decodeWmo(getWeatherForDay(day)!.code).emoji }}
+                      {{ getWeatherForDay(day)!.temp }}°C (H:{{ getWeatherForDay(day)!.max }}° L:{{
+                        getWeatherForDay(day)!.min
+                      }}° · Rain {{ getWeatherForDay(day)!.rain }}mm)
                     </span>
                   </div>
 

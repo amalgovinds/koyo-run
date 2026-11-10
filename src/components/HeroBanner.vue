@@ -21,14 +21,14 @@ const LEAF_OPTIONS: { mode: LeafMode; label: string }[] = [
 
 const { frame } = useAsciiTicker()
 const { currentDay, activeCheckpointText } = useTripClock()
-const { weatherMap, loading, error, fetchAll } = useWeather()
+const { weatherMap, loading, error, fetchAll, getWeatherForDay } = useWeather()
 const { showToast } = useToast()
 
 const asciiBanner = computed(() => heroAsciiFrames[frame.value] ?? '')
 
 const activeWeatherKey = computed(() => (currentDay.value.weatherKey as WeatherKey) || 'tokyo')
 
-const activeWeather = computed(() => weatherMap.value[activeWeatherKey.value])
+const activeWeather = computed(() => getWeatherForDay(currentDay.value))
 
 const activeCityName = computed(
   () => locationByKey[activeWeatherKey.value]?.name ?? currentDay.value.cityShort,
