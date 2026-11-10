@@ -20,7 +20,7 @@ const LEAF_OPTIONS: { mode: LeafMode; label: string }[] = [
 ]
 
 const { frame } = useAsciiTicker()
-const { currentDay, activeCheckpointText } = useTripClock()
+const { currentDay, formattedTime, activeCheckpointText, liveMode, toggleLiveMode } = useTripClock()
 const { weatherMap, loading, error, fetchAll, getWeatherForDay } = useWeather()
 const { showToast } = useToast()
 
@@ -112,6 +112,24 @@ async function syncWeather(): Promise<void> {
                 {{ opt.label }}
               </button>
             </div>
+
+            <!-- Global Live JST vs Simulated Mode Toggle -->
+            <button
+              type="button"
+              class="flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-semibold shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-washi-momiji"
+              :class="
+                liveMode
+                  ? 'border-[#9BC1AE] bg-washi-jrgreen text-washi-jrink'
+                  : 'border-washi-border bg-[#FFFDF9] text-washi-umber hover:bg-washi-warm hover:text-washi-ink'
+              "
+              @click="toggleLiveMode"
+            >
+              <span
+                class="h-2 w-2 rounded-full"
+                :class="liveMode ? 'bg-washi-jrink animate-ping' : 'bg-washi-persimmon'"
+              ></span>
+              <span>{{ liveMode ? `LIVE JST · ${formattedTime}` : `SIM · ${formattedTime}` }}</span>
+            </button>
 
             <!-- Live Weather Pill: ⛅ Tokyo 10°C -->
             <button

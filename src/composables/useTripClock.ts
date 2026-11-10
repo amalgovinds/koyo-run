@@ -13,6 +13,8 @@ export interface DaylightPhase {
 // Module-level refs: every component that calls useTripClock() shares this state.
 const simDayIndex = ref(1) // start on Day-1 Tokyo
 const simMinutesOfDay = ref(970) // 16:10
+const liveMode = ref(false)
+let liveTimer: number | undefined
 
 const hmToMin = (hm: string): number => {
   const [h = 0, m = 0] = hm.split(':').map(Number)
@@ -31,6 +33,51 @@ function getFirstDay(): ItineraryDay {
 }
 const firstDay = getFirstDay()
 
+/**
+ * Reads the user's device clock, converts it to Japan Standard Time (Asia/Tokyo),
+ * and snaps `simDayIndex` + `simMinutesOfDay` to the matching itinerary day and minute.
+ */
+function syncToDeviceClock(): void {
+  const now = new Date()
+
+  // Extract YYYY-MM-DD in Asia/Tokyo timezone
+  const jstDateISO = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
+
+  // Extract HH:mm in Asia/Tokyo timezone
+  const jstTimeStr = now.toLocaleTimeString('en-GB', {
+    timeZone: 'Asia/Tokyo',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  simMinutesOfDay.value = hmToMin(jstTimeStr)
+
+  // Match against itineraryDays (or clamp to Day 0 / Day 14 if outside trip dates)
+  const exactIdx = itineraryDays.findIndex((d) => d.dateISO === jstDateISO)
+  if (exactIdx !== -1) {
+    simDayIndex.value = exactIdx
+  } else if (jstDateISO < firstDay.dateISO) {
+    simDayIndex.value = 0
+  } else {
+    simDayIndex.value = itineraryDays.length - 1
+  }
+}
+
+function setLiveMode(enabled: boolean): void {
+  liveMode.value = enabled
+  window.clearInterval(liveTimer)
+  liveTimer = undefined
+
+  if (enabled) {
+    syncToDeviceClock()
+    liveTimer = window.setInterval(syncToDeviceClock, 15000)
+  }
+}
+
+function toggleLiveMode(): void {
+  setLiveMode(!liveMode.value)
+}
+
 export function useTripClock() {
   const currentDay = computed<ItineraryDay>(() => itineraryDays[simDayIndex.value] ?? firstDay)
 
@@ -40,12 +87,15 @@ export function useTripClock() {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
   })
 
+  // Stepping or picking a day manually exits liveMode so your selection isn't overwritten.
   const stepDay = (delta: number): void => {
+    if (liveMode.value) return
     const next = simDayIndex.value + delta
     if (next >= 0 && next < itineraryDays.length) simDayIndex.value = next
   }
 
   const setDay = (index: number): void => {
+    if (liveMode.value) return
     if (index >= 0 && index < itineraryDays.length) simDayIndex.value = index
   }
 
@@ -132,6 +182,10 @@ export function useTripClock() {
   return {
     simDayIndex,
     simMinutesOfDay,
+    liveMode,
+    setLiveMode,
+    toggleLiveMode,
+    syncToDeviceClock,
     currentDay,
     formattedTime,
     stepDay,

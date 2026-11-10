@@ -12,6 +12,7 @@ import CheckpointRow from '@/components/CheckpointRow.vue'
 const {
   simDayIndex,
   simMinutesOfDay,
+  liveMode,
   currentDay,
   formattedTime,
   stepDay,
@@ -79,8 +80,8 @@ const weatherAlerts = computed(() => {
         <div class="flex items-center gap-2">
           <button
             type="button"
-            :disabled="simDayIndex <= 0"
-            class="rounded-lg border border-washi-border bg-[#FAF6EE] px-3 py-1.5 font-mono text-xs font-semibold text-washi-ink transition hover:border-washi-momiji disabled:opacity-40"
+            :disabled="liveMode || simDayIndex <= 0"
+            class="rounded-lg border border-washi-border bg-[#FAF6EE] px-3 py-1.5 font-mono text-xs font-semibold text-washi-ink transition hover:border-washi-momiji disabled:cursor-not-allowed disabled:opacity-40"
             @click="stepDay(-1)"
           >
             ← Prev Day
@@ -90,15 +91,15 @@ const weatherAlerts = computed(() => {
           </span>
           <button
             type="button"
-            :disabled="simDayIndex >= itineraryDays.length - 1"
-            class="rounded-lg border border-washi-border bg-[#FAF6EE] px-3 py-1.5 font-mono text-xs font-semibold text-washi-ink transition hover:border-washi-momiji disabled:opacity-40"
+            :disabled="liveMode || simDayIndex >= itineraryDays.length - 1"
+            class="rounded-lg border border-washi-border bg-[#FAF6EE] px-3 py-1.5 font-mono text-xs font-semibold text-washi-ink transition hover:border-washi-momiji disabled:cursor-not-allowed disabled:opacity-40"
             @click="stepDay(1)"
           >
             Next Day →
           </button>
         </div>
 
-        <!-- Simulated Time Scrubber -->
+        <!-- Simulated Time Scrubber (Strictly Locked in liveMode) -->
         <div class="flex flex-wrap items-center gap-3">
           <span
             class="rounded-full px-2.5 py-0.5 font-mono text-xs font-medium"
@@ -107,7 +108,9 @@ const weatherAlerts = computed(() => {
             {{ daylightPhase.icon }} {{ daylightPhase.label }}
           </span>
           <div class="flex items-center gap-2">
-            <label for="time-slider" class="font-mono text-xs text-washi-umber">JST Clock:</label>
+            <label for="time-slider" class="font-mono text-xs text-washi-umber">
+              {{ liveMode ? '🔒 Live JST:' : 'JST Clock:' }}
+            </label>
             <input
               id="time-slider"
               v-model.number="simMinutesOfDay"
@@ -115,7 +118,8 @@ const weatherAlerts = computed(() => {
               min="270"
               max="1380"
               step="5"
-              class="w-32 accent-washi-momiji sm:w-44"
+              :disabled="liveMode"
+              class="w-32 accent-washi-momiji disabled:cursor-not-allowed disabled:opacity-45 sm:w-44"
             />
             <span
               class="rounded bg-washi-ink px-2 py-0.5 font-mono text-xs font-bold text-[#FAF6EE]"
@@ -126,13 +130,14 @@ const weatherAlerts = computed(() => {
         </div>
       </div>
 
-      <!-- Horizontal Day Pills -->
+      <!-- Horizontal Day Pills (Also locked while liveMode is active) -->
       <div class="mt-3 flex gap-1.5 overflow-x-auto pb-1">
         <button
           v-for="(day, idx) in itineraryDays"
           :key="day.id"
           type="button"
-          class="shrink-0 rounded-full border px-3 py-1 font-mono text-xs transition"
+          :disabled="liveMode"
+          class="shrink-0 rounded-full border px-3 py-1 font-mono text-xs transition disabled:cursor-not-allowed disabled:opacity-50"
           :class="
             idx === simDayIndex
               ? 'border-washi-momiji bg-washi-momiji font-bold text-white'
@@ -184,8 +189,11 @@ const weatherAlerts = computed(() => {
         >
           <div v-if="liveWeather">
             <div class="font-mono text-[11px] text-washi-umber uppercase">
-              { liveWeather.isForecast ? `DATE FORECAST (${currentDay.dateISO})` : 'LIVE OPEN-METEO'
-              }} · {{ locationInfo.name }} ({{ locationInfo.sub }})
+              {{
+                liveWeather.isForecast
+                  ? `DATE FORECAST (${currentDay.dateISO})`
+                  : 'LIVE OPEN-METEO'
+              }}· {{ locationInfo.name }} ({{ locationInfo.sub }})
             </div>
             <div class="mt-0.5 flex items-baseline gap-2">
               <span class="font-serif text-2xl font-bold text-washi-ink">
@@ -273,7 +281,11 @@ const weatherAlerts = computed(() => {
           Minute-by-Minute Field Schedule ({{ currentDay.checkpoints.length }} Stops)
         </h3>
         <span class="font-mono text-xs text-washi-umber">
-          Scrub the JST clock slider above to test active checkpoints
+          {{
+            liveMode
+              ? '🔒 Locked to live JST — click LIVE JST in the header banner to unlock'
+              : 'Scrub the JST clock slider above to test active checkpoints'
+          }}
         </span>
       </div>
 
