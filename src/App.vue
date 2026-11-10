@@ -72,6 +72,14 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
         <span class="font-serif font-bold text-washi-ink">
           紅葉狩り KOYO 2026 · Japan Autumn Field Companion
         </span>
+        <a
+          href="https://github.com/amalgovinds/koyo-run"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="absolute left-1/2 -translate-x-1/2 washi-persimmon font-mono text-[11px] hover:underline"
+        >
+          源
+        </a>
         <span class="font-mono text-[11px]">Hash-routed ({{ routeList }})</span>
       </div>
     </footer>
