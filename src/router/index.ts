@@ -5,9 +5,11 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
   routes: [
     { path: '/', redirect: { name: 'today' } },
+    { path: '/eats', name: 'eats', component: () => import('@/views/EatsView.vue') },
     { path: '/flights', name: 'flights', component: () => import('@/views/FlightsView.vue') },
     { path: '/journal', name: 'journal', component: () => import('@/views/JournalView.vue') },
     { path: '/map', name: 'map', component: () => import('@/views/MapView.vue') },
+    { path: '/phrases', name: 'phrases', component: () => import('@/views/PhrasesView.vue') },
     { path: '/stays', name: 'stays', component: () => import('@/views/StaysView.vue') },
     { path: '/tickets', name: 'tickets', component: () => import('@/views/TicketsView.vue') },
     { path: '/today', name: 'today', component: () => import('@/views/TodayView.vue') },

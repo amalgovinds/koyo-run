@@ -76,7 +76,7 @@ const routeList = navTabs.map((t) => `#/${t.id}`).join(' · ')
           href="https://github.com/amalgovinds/koyo-run"
           target="_blank"
           rel="noopener noreferrer"
-          class="absolute left-1/2 -translate-x-1/2 washi-persimmon font-mono text-[11px] hover:underline"
+          class="washi-persimmon font-mono text-[11px] hover:underline"
         >
           源
         </a>

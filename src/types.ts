@@ -30,6 +30,24 @@ export interface CityDiorama {
   frames: string[]
 }
 
+export interface EateryItem {
+  id: string
+  cityKey: WeatherKey
+  cityName: string
+  dayTag: string
+  name: string
+  japaneseName: string
+  speciality: string
+  mustOrder: string
+  priceRange: string
+  nearStop: string
+  hoursNote: string
+  lat: number
+  lon: number
+  mapQuery: string
+  mapUrl: string
+}
+
 export interface Flight {
   id: string
   flightNo: string
@@ -75,6 +93,14 @@ export interface JournalEntry {
   content: string
 }
 
+export interface KanjiSign {
+  kanji: string
+  reading: string
+  pronunciation: string
+  meaning: string
+  whereSeen: string
+}
+
 export type LeafMode = 'breeze' | 'calm' | 'paused'
 
 export interface Stay {
@@ -89,14 +115,27 @@ export interface Stay {
   walkNote: string
   mapUrl: string
 }
-
-export type TabId = 'today' | 'map' | 'flights' | 'stays' | 'trains' | 'tickets' | 'journal'
+export type TabId =
+  'today' | 'map' | 'flights' | 'stays' | 'trains' | 'tickets' | 'eats' | 'phrases' | 'journal'
 
 export interface NavTab {
   id: TabId
   label: string
   icon: string
   badge: string
+}
+
+export type PhraseCategoryKey = 'essentials' | 'dining' | 'transit' | 'shopping' | 'emergency'
+
+export interface PhraseItem {
+  id: string
+  category: PhraseCategoryKey
+  english: string
+  japanese: string // Written Kanji + Kana
+  hiragana: string // Pure Kana reading
+  romaji: string // Standard Hepburn Romaji
+  pronunciation: string // Syllable-by-syllable phonetic guide
+  contextTip?: string
 }
 
 export interface Ticket {
