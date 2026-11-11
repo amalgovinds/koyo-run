@@ -1,9 +1,8 @@
-<!-- src/views/PhrasesView.vue -->
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { phraseCategories, phrasesData, stationKanjiList } from '@/data/phrases'
 import { useToast } from '@/composables/useToast'
-import type { PhraseCategoryKey, PhraseItem } from '@/types'
+import type { KanjiSign, PhraseCategoryKey, PhraseItem } from '@/types'
 
 const { showToast } = useToast()
 
@@ -11,6 +10,63 @@ const selectedCategory = ref<PhraseCategoryKey | 'all'>('all')
 const searchQuery = ref('')
 const activeShowCard = ref<PhraseItem | null>(null)
 const speakingId = ref<string | null>(null)
+const speakingSpeed = ref<'normal' | 'slow' | null>(null)
+
+// Web Speech API voice management
+const availableJaVoices = ref<SpeechSynthesisVoice[]>([])
+const selectedVoiceURI = ref<string>('')
+let speakTimeout: number | undefined
+let currentAudio: HTMLAudioElement | null = null
+
+/**
+ * Scores Japanese voices so natural/neural voices ("Google 日本語", "Nanami",
+ * "Enhanced", "Premium", "O-Ren", "Siri") always beat compact robotic OS voices.
+ */
+function scoreJapaneseVoice(v: SpeechSynthesisVoice): number {
+  const name = v.name.toLowerCase()
+  let score = 0
+  if (name.includes('natural') || name.includes('neural')) score += 100
+  if (name.includes('google') && v.lang.startsWith('ja')) score += 90
+  if (name.includes('nanami') || name.includes('keita')) score += 85
+  if (name.includes('enhanced') || name.includes('premium') || name.includes('siri')) score += 80
+  if (name.includes('o-ren') || name.includes('hattori')) score += 60
+  if (name.includes('kyoko') || name.includes('otoya')) score += 40
+  if (!v.localService) score += 25 // Cloud/network voices are much smoother in Chrome/Edge
+  return score
+}
+
+function loadJapaneseVoices(): void {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  const all = window.speechSynthesis.getVoices()
+  const jaList = all
+    .filter((v) => v.lang.toLowerCase().startsWith('ja'))
+    .sort((a, b) => scoreJapaneseVoice(b) - scoreJapaneseVoice(a))
+
+  availableJaVoices.value = jaList
+  const best = jaList[0]
+  if (best && !selectedVoiceURI.value) {
+    selectedVoiceURI.value = best.voiceURI
+  }
+}
+
+onMounted(() => {
+  loadJapaneseVoices()
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.addEventListener('voiceschanged', loadJapaneseVoices)
+  }
+})
+
+onBeforeUnmount(() => {
+  window.clearTimeout(speakTimeout)
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio = null
+  }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.removeEventListener('voiceschanged', loadJapaneseVoices)
+  }
+})
 
 const filteredPhrases = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
@@ -28,10 +84,6 @@ const filteredPhrases = computed(() => {
   })
 })
 
-/**
- * Parses "ah-ree-gah-TOH goh-zai-MAHS" into prosodic syllables so
- * stressed CAPS syllables get an autumn pitch-accent crest.
- */
 function parseProsody(pronunciation: string) {
   return pronunciation.split(/\s+/).map((word) =>
     word.split('-').map((syl) => ({
@@ -41,30 +93,125 @@ function parseProsody(pronunciation: string) {
   )
 }
 
-function speakJapanese(phrase: PhraseItem, rate = 0.9): void {
+function stopActiveAudio(): void {
+  window.clearTimeout(speakTimeout)
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio.currentTime = 0
+    currentAudio = null
+  }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
+}
+
+/**
+ * Fallback Web Speech synthesizer using the highest-ranked (or user-selected) Japanese voice.
+ */
+function speakWithWebSpeech(phrase: PhraseItem, mode: 'normal' | 'slow'): void {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    speakingId.value = null
+    speakingSpeed.value = null
     showToast('Speech synthesis is not supported in this browser.')
     return
   }
 
-  window.speechSynthesis.cancel()
-  const utter = new SpeechSynthesisUtterance(phrase.japanese)
-  utter.lang = 'ja-JP'
-  utter.rate = rate
+  speakTimeout = window.setTimeout(() => {
+    const textToSpeak =
+      mode === 'slow' ? phrase.hiragana.replace(/([はをにでがも、])/g, '$1、 ') : phrase.japanese
 
-  const voices = window.speechSynthesis.getVoices()
-  const jaVoice = voices.find((v) => v.lang.startsWith('ja'))
-  if (jaVoice) utter.voice = jaVoice
+    const utter = new SpeechSynthesisUtterance(textToSpeak)
+    utter.lang = 'ja-JP'
+    utter.rate = mode === 'slow' ? 0.55 : 0.92
+    utter.pitch = 1.02
 
+    const chosen =
+      availableJaVoices.value.find((v) => v.voiceURI === selectedVoiceURI.value) ??
+      availableJaVoices.value[0]
+    if (chosen) utter.voice = chosen
+
+    utter.onend = () => {
+      speakingId.value = null
+      speakingSpeed.value = null
+    }
+    utter.onerror = () => {
+      speakingId.value = null
+      speakingSpeed.value = null
+    }
+
+    window.speechSynthesis.speak(utter)
+  }, 60)
+}
+
+/**
+ * 1. Tries playing studio neural MP3 from `public/audio/{id}.mp3` (or `{id}-slow.mp3`) if present.
+ * 2. Automatically falls back to the ranked Web Speech API voice if the MP3 doesn't exist yet.
+ */
+function speakJapanese(phrase: PhraseItem, mode: 'normal' | 'slow' = 'normal'): void {
+  stopActiveAudio()
   speakingId.value = phrase.id
-  utter.onend = () => {
-    speakingId.value = null
-  }
-  utter.onerror = () => {
-    speakingId.value = null
+  speakingSpeed.value = mode
+
+  const suffix = mode === 'slow' ? '-slow' : ''
+  const mp3Path = `${import.meta.env.BASE_URL}audio/${phrase.id}${suffix}.mp3`
+  const audio = new Audio(mp3Path)
+  currentAudio = audio
+
+  let fellBack = false
+  const fallback = () => {
+    if (fellBack) return
+    fellBack = true
+    currentAudio = null
+    speakWithWebSpeech(phrase, mode)
   }
 
-  window.speechSynthesis.speak(utter)
+  audio.onended = () => {
+    speakingId.value = null
+    speakingSpeed.value = null
+    currentAudio = null
+  }
+  audio.onerror = fallback
+
+  audio.play().catch(fallback)
+}
+
+function speakKanji(sign: KanjiSign): void {
+  stopActiveAudio()
+  speakingId.value = sign.kanji
+  speakingSpeed.value = 'normal'
+
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    speakingId.value = null
+    speakingSpeed.value = null
+    showToast('Speech synthesis is not supported in this browser.')
+    return
+  }
+
+  speakTimeout = window.setTimeout(() => {
+    // Strip parenthetical Romaji and replace '/' with a natural Japanese comma pause
+    const kanaOnly = sign.reading.split('(')[0]?.replace(/\//g, '、').trim() || sign.kanji
+
+    const utter = new SpeechSynthesisUtterance(kanaOnly)
+    utter.lang = 'ja-JP'
+    utter.rate = 0.85
+    utter.pitch = 1.02
+
+    const chosen =
+      availableJaVoices.value.find((v) => v.voiceURI === selectedVoiceURI.value) ??
+      availableJaVoices.value[0]
+    if (chosen) utter.voice = chosen
+
+    utter.onend = () => {
+      speakingId.value = null
+      speakingSpeed.value = null
+    }
+    utter.onerror = () => {
+      speakingId.value = null
+      speakingSpeed.value = null
+    }
+
+    window.speechSynthesis.speak(utter)
+  }, 60)
 }
 
 async function copyPhrase(phrase: PhraseItem): Promise<void> {
@@ -98,9 +245,28 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
             glances at Shinkansen gates, ramen counters, and temple receptions.
           </p>
         </div>
+      </div>
 
-        <!-- Search Input -->
-        <div class="relative w-full sm:w-72">
+      <!-- Voice Selector + Search Input -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div
+          v-if="availableJaVoices.length > 0"
+          class="inline-flex items-center gap-1.5 rounded-full border border-washi-border bg-[#FFFDF9] px-3 py-1.5 font-mono text-xs text-washi-umber"
+        >
+          <i class="ph-fill ph-waveform text-washi-momiji" aria-hidden="true"></i>
+          <label for="ja-voice-select" class="sr-only">Japanese Voice</label>
+          <select
+            id="ja-voice-select"
+            v-model="selectedVoiceURI"
+            class="max-w-44 truncate bg-transparent font-mono text-xs font-semibold text-washi-ink focus:outline-none"
+          >
+            <option v-for="v in availableJaVoices" :key="v.voiceURI" :value="v.voiceURI">
+              {{ v.name }} ({{ v.localService ? 'Offline' : 'Neural' }})
+            </option>
+          </select>
+        </div>
+
+        <div class="relative w-full sm:w-64">
           <i
             class="ph-bold ph-magnifying-glass absolute top-1/2 left-3.5 -translate-y-1/2 text-xs text-washi-bark"
             aria-hidden="true"
@@ -153,10 +319,16 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
       </div>
 
       <div class="grid grid-cols-2 gap-4 pt-1 sm:grid-cols-4">
-        <div
+        <button
           v-for="sign in stationKanjiList"
           :key="sign.kanji"
-          class="ema-plaque group relative overflow-hidden px-4 pt-7 pb-4 text-center transition-transform hover:-translate-y-1"
+          type="button"
+          class="ema-plaque group relative cursor-pointer overflow-hidden px-4 pt-7 pb-4 text-center transition-all hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-washi-momiji"
+          :class="{
+            'ring-2 ring-washi-momiji -translate-y-1': speakingId === sign.kanji,
+          }"
+          :title="`Click to hear ${sign.kanji} (${sign.reading})`"
+          @click="speakKanji(sign)"
         >
           <!-- Giant Faint Watermark Kanji in Background -->
           <span
@@ -167,14 +339,20 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
           </span>
 
           <div class="relative z-10">
-            <span
-              class="font-mono text-[10px] font-bold tracking-wider text-washi-momiji uppercase"
+            <div
+              class="inline-flex items-center justify-center gap-1 font-mono text-[10px] font-bold tracking-wider text-washi-momiji uppercase"
             >
-              {{ sign.pronunciation }}
-            </span>
+              <i
+                class="ph-fill ph-speaker-high text-xs transition-transform group-hover:scale-110"
+                :class="{ 'animate-bounce': speakingId === sign.kanji }"
+                aria-hidden="true"
+              ></i>
+              <span>{{ sign.pronunciation }}</span>
+            </div>
 
             <div
-              class="mt-1 font-serif text-3xl font-extrabold text-washi-ink transition-colors group-hover:text-washi-momiji"
+              class="mt-1 font-serif text-3xl font-extrabold transition-colors group-hover:text-washi-momiji"
+              :class="speakingId === sign.kanji ? 'text-washi-momiji' : 'text-washi-ink'"
             >
               {{ sign.kanji }}
             </div>
@@ -193,7 +371,7 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
               {{ sign.whereSeen }}
             </p>
           </div>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -246,26 +424,35 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
                   type="button"
                   class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[11px] font-semibold transition"
                   :class="
-                    speakingId === item.id
+                    speakingId === item.id && speakingSpeed === 'normal'
                       ? 'border-washi-momiji bg-washi-momiji text-white'
                       : 'border-washi-border bg-[#FFFDF9] text-washi-ink hover:border-washi-momiji'
                   "
-                  title="Listen in Japanese"
-                  @click="speakJapanese(item, 0.9)"
+                  title="Listen at normal speed"
+                  @click="speakJapanese(item, 'normal')"
                 >
                   <i
-                    class="ph-fill ph-speaker-high text-washi-momiji"
-                    :class="{ 'text-white': speakingId === item.id }"
+                    class="ph-fill ph-speaker-high"
+                    :class="
+                      speakingId === item.id && speakingSpeed === 'normal'
+                        ? 'text-white'
+                        : 'text-washi-momiji'
+                    "
                   ></i>
                   <span>Listen</span>
                 </button>
                 <button
                   type="button"
-                  class="rounded-full border border-washi-border bg-[#FFFDF9] px-2 py-1 font-mono text-[10px] text-washi-umber transition hover:border-washi-momiji hover:text-washi-ink"
-                  title="Listen slowly (0.65x)"
-                  @click="speakJapanese(item, 0.65)"
+                  class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold transition"
+                  :class="
+                    speakingId === item.id && speakingSpeed === 'slow'
+                      ? 'border-washi-jrink bg-washi-jrink text-white'
+                      : 'border-washi-border bg-[#FFFDF9] text-washi-umber hover:border-washi-momiji hover:text-washi-ink'
+                  "
+                  title="Listen slowly syllable-by-syllable"
+                  @click="speakJapanese(item, 'slow')"
                 >
-                  Slow
+                  <span>🐢 Slow</span>
                 </button>
               </div>
             </div>
@@ -379,9 +566,16 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
           <button
             type="button"
             class="inline-flex items-center gap-1.5 rounded-full bg-washi-momiji px-5 py-2 font-mono text-xs font-bold text-white shadow-xs"
-            @click="speakJapanese(activeShowCard, 0.9)"
+            @click="speakJapanese(activeShowCard, 'normal')"
           >
             <i class="ph-fill ph-speaker-high"></i> Speak Aloud
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-full border border-washi-border bg-[#FFFDF9] px-4 py-2 font-mono text-xs font-bold text-washi-ink"
+            @click="speakJapanese(activeShowCard, 'slow')"
+          >
+            🐢 Slow
           </button>
           <button
             type="button"
