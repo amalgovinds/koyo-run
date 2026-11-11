@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import type { WeatherKey } from '@/types'
 import { itineraryDays } from '@/data/itinerary'
 import { ASCII_FRAME_COUNT, cityAsciiDioramas } from '@/data/ascii'
 import { decodeWmo } from '@/data/weather'
 import { locationByKey } from '@/data/locations'
+import { useAsciiTicker } from '@/composables/useAsciiTicker'
 import { useTripClock } from '@/composables/useTripClock'
 import { useWeather } from '@/composables/useWeather'
 import CheckpointRow from '@/components/CheckpointRow.vue'
@@ -23,20 +24,12 @@ const {
 
 const { weatherMap, loading, error, fetchAll, getWeatherForDay } = useWeather()
 
-const asciiFrame = ref(0)
-let asciiTimer: ReturnType<typeof setInterval> | null = null
+const { frame: asciiFrame } = useAsciiTicker()
 
 onMounted(() => {
   if (Object.keys(weatherMap.value).length === 0 && !loading.value) {
     fetchAll()
   }
-  asciiTimer = setInterval(() => {
-    asciiFrame.value = (asciiFrame.value + 1) % ASCII_FRAME_COUNT
-  }, 850)
-})
-
-onUnmounted(() => {
-  if (asciiTimer) clearInterval(asciiTimer)
 })
 
 const currentWeatherKey = computed(() => (currentDay.value.weatherKey as WeatherKey) || 'tokyo')

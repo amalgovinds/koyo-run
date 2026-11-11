@@ -8,7 +8,7 @@ const frame = ref(0)
 let timer: number | undefined
 let users = 0
 
-export function useAsciiTicker(intervalMs = 420) {
+export function useAsciiTicker(intervalMs = 600) {
   onMounted(() => {
     users += 1
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
