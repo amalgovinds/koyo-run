@@ -86,7 +86,7 @@ const embedMapUrl = computed(() => {
   <section class="space-y-8">
     <!-- 1. Sunlit Autumn Harvest Editorial Header -->
     <div class="relative overflow-hidden border-b border-washi-border pb-6">
-      <!-- Decorative SVG Maple Branch (Top Right) -->
+      <!-- Decorative SVG Maple Branch w/ Hanging Lanterns (Top Right) -->
       <svg
         viewBox="0 0 360 95"
         class="pointer-events-none absolute top-0 right-0 hidden h-24 w-80 opacity-85 md:block"
@@ -97,6 +97,48 @@ const embedMapUrl = computed(() => {
         <circle cx="240" cy="11" r="10" fill="#D96B27" opacity="0.85" />
         <circle cx="295" cy="20" r="15" fill="#C83E2B" opacity="0.78" />
         <circle cx="325" cy="14" r="11" fill="#C88A1E" opacity="0.75" />
+        <!-- Hanging Lantern 1 -->
+        <line x1="265" y1="14" x2="265" y2="32" stroke="#2B211C" stroke-width="1.5" />
+        <rect x="256" y="32" width="18" height="4" rx="1" fill="#2B211C" />
+        <ellipse cx="265" cy="52" rx="16" ry="18" fill="#C83E2B" />
+        <ellipse
+          cx="265"
+          cy="52"
+          rx="16"
+          ry="9"
+          fill="none"
+          stroke="#FAF6EE"
+          stroke-width="0.7"
+          opacity="0.5"
+        />
+        <text
+          x="265"
+          y="56"
+          text-anchor="middle"
+          fill="#FFFDF9"
+          font-size="11"
+          font-family="serif"
+          font-weight="bold"
+        >
+          味
+        </text>
+        <rect x="257" y="68" width="16" height="4" rx="1" fill="#2B211C" />
+        <!-- Hanging Lantern 2 -->
+        <line x1="330" y1="12" x2="330" y2="24" stroke="#2B211C" stroke-width="1.5" />
+        <rect x="322" y="24" width="16" height="3.5" rx="1" fill="#2B211C" />
+        <ellipse cx="330" cy="41" rx="14" ry="15" fill="#D96B27" />
+        <text
+          x="330"
+          y="45"
+          text-anchor="middle"
+          fill="#FFFDF9"
+          font-size="10"
+          font-family="serif"
+          font-weight="bold"
+        >
+          茶
+        </text>
+        <rect x="323" y="55" width="14" height="3.5" rx="1" fill="#2B211C" />
       </svg>
 
       <div class="relative z-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
