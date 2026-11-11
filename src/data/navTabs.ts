@@ -32,5 +32,17 @@ export const navTabs: NavTab[] = [
     icon: 'ph-fill ph-ticket',
     badge: String(ticketsData.length),
   },
+  {
+    id: 'eats',
+    label: 'Local Eats',
+    icon: 'ph-fill ph-bowl-food',
+    badge: '味',
+  },
+  {
+    id: 'phrases',
+    label: 'Japanese',
+    icon: 'ph-fill ph-translate',
+    badge: '会話',
+  },
   { id: 'journal', label: 'Field Journal', icon: 'ph-fill ph-book-open-text', badge: '' },
 ]
