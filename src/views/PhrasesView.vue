@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { phraseCategories, phrasesData, stationKanjiList } from '@/data/phrases'
+import {
+  phraseCategories,
+  phrasesData,
+  stationKanjiList,
+  morePhraseSections,
+  moreKanjiList,
+} from '@/data/phrases'
 import { useToast } from '@/composables/useToast'
 import type { KanjiSign, PhraseCategoryKey, PhraseItem } from '@/types'
 
 const { showToast } = useToast()
+
+const showMorePhrasesModal = ref(false)
 
 const selectedCategory = ref<PhraseCategoryKey | 'all'>('all')
 const searchQuery = ref('')
@@ -225,322 +233,342 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
 </script>
 
 <template>
-  <section class="space-y-10">
-    <!-- 1. Editorial Header with Autumn Brush Accent -->
-    <div class="relative overflow-hidden border-b border-washi-border pb-6">
-      <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-        <div>
-          <div
-            class="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-widest text-washi-momiji uppercase"
-          >
-            <span>言の葉のしおり · AUTUMN FIELD PHRASEBOOK</span>
-          </div>
-          <h2
-            class="mt-1 font-serif text-3xl font-extrabold tracking-tight text-washi-ink sm:text-4xl"
-          >
-            Spoken Japanese &amp; Station Kanji
-          </h2>
-          <p class="mt-1 max-w-2xl text-xs text-washi-umber sm:text-sm">
-            Written script, Hiragana reading, and pitch-accent rhythm strips—designed for quick
-            glances at Shinkansen gates, ramen counters, and temple receptions.
-          </p>
-        </div>
-      </div>
-
-      <!-- Voice Selector + Search Input -->
-      <div class="flex flex-wrap items-center gap-2">
-        <div
-          v-if="availableJaVoices.length > 0"
-          class="inline-flex items-center gap-1.5 rounded-full border border-washi-border bg-[#FFFDF9] px-3 py-1.5 font-mono text-xs text-washi-umber"
-        >
-          <i class="ph-fill ph-waveform text-washi-momiji" aria-hidden="true"></i>
-          <label for="ja-voice-select" class="sr-only">Japanese Voice</label>
-          <select
-            id="ja-voice-select"
-            v-model="selectedVoiceURI"
-            class="max-w-44 truncate bg-transparent font-mono text-xs font-semibold text-washi-ink focus:outline-none"
-          >
-            <option v-for="v in availableJaVoices" :key="v.voiceURI" :value="v.voiceURI">
-              {{ v.name }} ({{ v.localService ? 'Offline' : 'Neural' }})
-            </option>
-          </select>
-        </div>
-
-        <div class="relative w-full sm:w-64">
-          <i
-            class="ph-bold ph-magnifying-glass absolute top-1/2 left-3.5 -translate-y-1/2 text-xs text-washi-bark"
-            aria-hidden="true"
-          ></i>
-          <input
-            v-model="searchQuery"
-            type="search"
-            placeholder="Search English, Romaji, Kana..."
-            class="w-full rounded-full border border-washi-border bg-[#FFFDF9] py-2 pr-4 pl-9 font-mono text-xs text-washi-ink placeholder:text-washi-bark focus:border-washi-momiji focus:outline-none"
-          />
-        </div>
-      </div>
-
-      <!-- Category Filter Pills -->
-      <div class="mt-5 flex flex-wrap gap-2">
-        <button
-          v-for="cat in phraseCategories"
-          :key="cat.key"
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition"
-          :class="
-            selectedCategory === cat.key
-              ? 'border-washi-momiji bg-washi-momiji font-semibold text-white shadow-xs'
-              : 'border-washi-border bg-[#FFFDF9] text-washi-umber hover:border-washi-momiji hover:text-washi-ink'
-          "
-          @click="selectedCategory = cat.key"
-        >
-          <i :class="cat.icon" aria-hidden="true"></i>
-          <span>{{ cat.label }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 2. Pentagonal Shrine Ema (絵馬) Wooden Plaques for Station & Menu Kanji -->
-    <div class="space-y-4">
-      <div class="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <span
-            class="font-mono text-[11px] font-bold tracking-widest text-washi-persimmon uppercase"
-          >
-            絵馬札 · WAYFINDING KANJI PLAQUES
-          </span>
-          <h3 class="font-serif text-xl font-bold text-washi-ink sm:text-2xl">
-            8 Essential Characters You Will See Every Day
-          </h3>
-        </div>
-        <span class="font-mono text-xs text-washi-bark">
-          Hung like wooden shrine <em>ema</em> plaques
-        </span>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 pt-1 sm:grid-cols-4">
-        <button
-          v-for="sign in stationKanjiList"
-          :key="sign.kanji"
-          type="button"
-          class="ema-plaque group relative cursor-pointer overflow-hidden px-4 pt-7 pb-4 text-center transition-all hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-washi-momiji"
-          :class="{
-            'ring-2 ring-washi-momiji -translate-y-1': speakingId === sign.kanji,
-          }"
-          :title="`Click to hear ${sign.kanji} (${sign.reading})`"
-          @click="speakKanji(sign)"
-        >
-          <!-- Giant Faint Watermark Kanji in Background -->
-          <span
-            class="pointer-events-none absolute -right-2 -bottom-4 font-serif text-7xl font-extrabold text-washi-momiji/7 select-none"
-            aria-hidden="true"
-          >
-            {{ sign.kanji }}
-          </span>
-
-          <div class="relative z-10">
+  <div>
+    <section class="space-y-10">
+      <!-- 1. Editorial Header with Autumn Brush Accent -->
+      <div class="relative overflow-hidden border-b border-washi-border pb-6">
+        <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+          <div>
             <div
-              class="inline-flex items-center justify-center gap-1 font-mono text-[10px] font-bold tracking-wider text-washi-momiji uppercase"
+              class="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-widest text-washi-momiji uppercase"
             >
-              <i
-                class="ph-fill ph-speaker-high text-xs transition-transform group-hover:scale-110"
-                :class="{ 'animate-bounce': speakingId === sign.kanji }"
-                aria-hidden="true"
-              ></i>
-              <span>{{ sign.pronunciation }}</span>
+              <span>言の葉のしおり · AUTUMN FIELD PHRASEBOOK</span>
             </div>
+            <h2
+              class="mt-1 font-serif text-3xl font-extrabold tracking-tight text-washi-ink sm:text-4xl"
+            >
+              Spoken Japanese &amp; Station Kanji
+            </h2>
+            <p class="mt-1 max-w-2xl text-xs text-washi-umber sm:text-sm">
+              Written script, Hiragana reading, and pitch-accent rhythm strips—designed for quick
+              glances at Shinkansen gates, ramen counters, and temple receptions.
+            </p>
+          </div>
+        </div>
 
-            <div
-              class="mt-1 font-serif text-3xl font-extrabold transition-colors group-hover:text-washi-momiji"
-              :class="speakingId === sign.kanji ? 'text-washi-momiji' : 'text-washi-ink'"
+        <!-- Voice Selector + Search Input -->
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <div
+            v-if="availableJaVoices.length > 0"
+            class="inline-flex items-center gap-1.5 rounded-full border border-washi-border bg-[#FFFDF9] px-3 py-1.5 font-mono text-xs text-washi-umber"
+          >
+            <i class="ph-fill ph-waveform text-washi-momiji" aria-hidden="true"></i>
+            <label for="ja-voice-select" class="sr-only">Japanese Voice</label>
+            <select
+              id="ja-voice-select"
+              v-model="selectedVoiceURI"
+              class="max-w-44 truncate bg-transparent font-mono text-xs font-semibold text-washi-ink focus:outline-none"
+            >
+              <option v-for="v in availableJaVoices" :key="v.voiceURI" :value="v.voiceURI">
+                {{ v.name }} ({{ v.localService ? 'Offline' : 'Neural' }})
+              </option>
+            </select>
+          </div>
+
+          <div class="relative w-full sm:w-64">
+            <i
+              class="ph-bold ph-magnifying-glass absolute top-1/2 left-3.5 -translate-y-1/2 text-xs text-washi-bark"
+              aria-hidden="true"
+            ></i>
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="Search English, Romaji, Kana..."
+              class="w-full rounded-full border border-washi-border bg-[#FFFDF9] py-2 pr-4 pl-9 font-mono text-xs text-washi-ink placeholder:text-washi-bark focus:border-washi-momiji focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button
+            v-for="cat in phraseCategories"
+            :key="cat.key"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition"
+            :class="
+              selectedCategory === cat.key
+                ? 'border-washi-momiji bg-washi-momiji font-semibold text-white shadow-xs'
+                : 'border-washi-border bg-[#FFFDF9] text-washi-umber hover:border-washi-momiji hover:text-washi-ink'
+            "
+            @click="selectedCategory = cat.key"
+          >
+            <i :class="cat.icon" aria-hidden="true"></i>
+            <span>{{ cat.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Pentagonal Shrine Ema (絵馬) Wooden Plaques for Station & Menu Kanji -->
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <span
+              class="font-mono text-[11px] font-bold tracking-widest text-washi-persimmon uppercase"
+            >
+              絵馬札 · WAYFINDING KANJI PLAQUES
+            </span>
+            <h3 class="font-serif text-xl font-bold text-washi-ink sm:text-2xl">
+              8 Essential Characters You Will See Every Day
+            </h3>
+          </div>
+          <span class="font-mono text-xs text-washi-bark">
+            Hung like wooden shrine <em>ema</em> plaques
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-1 sm:grid-cols-4">
+          <button
+            v-for="sign in stationKanjiList"
+            :key="sign.kanji"
+            type="button"
+            class="ema-plaque group relative cursor-pointer overflow-hidden px-4 pt-7 pb-4 text-center transition-all hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-washi-momiji"
+            :class="{
+              'ring-2 ring-washi-momiji -translate-y-1': speakingId === sign.kanji,
+            }"
+            :title="`Click to hear ${sign.kanji} (${sign.reading})`"
+            @click="speakKanji(sign)"
+          >
+            <!-- Giant Faint Watermark Kanji in Background -->
+            <span
+              class="pointer-events-none absolute -right-2 -bottom-4 font-serif text-7xl font-extrabold text-washi-momiji/7 select-none"
+              aria-hidden="true"
             >
               {{ sign.kanji }}
-            </div>
+            </span>
 
-            <div class="mt-0.5 font-mono text-[11px] text-washi-umber">
-              {{ sign.reading }}
-            </div>
-
-            <div
-              class="mt-2 inline-block rounded-full border border-washi-border/80 bg-[#FFFDF9]/90 px-2.5 py-0.5 font-serif text-xs font-bold text-washi-ink"
-            >
-              {{ sign.meaning }}
-            </div>
-
-            <p class="mt-2 text-[11px] leading-snug text-washi-umber">
-              {{ sign.whereSeen }}
-            </p>
-          </div>
-        </button>
-      </div>
-    </div>
-
-    <!-- 3. Autumn Tanzaku (短冊) Poetry Strips Grid -->
-    <div class="space-y-4">
-      <div class="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <span class="font-mono text-[11px] font-bold tracking-widest text-washi-momiji uppercase">
-            短冊帳 · SPOKEN PHRASE STRIPS ({{ filteredPhrases.length }})
-          </span>
-          <h3 class="font-serif text-xl font-bold text-washi-ink sm:text-2xl">
-            How It’s Written &amp; How to Pronounce It
-          </h3>
-        </div>
-        <span class="font-mono text-xs text-washi-bark">
-          🍁 marks the stressed syllable in each phrase
-        </span>
-      </div>
-
-      <div class="grid gap-5 md:grid-cols-2">
-        <article
-          v-for="(item, idx) in filteredPhrases"
-          :key="item.id"
-          class="tanzaku-strip group relative flex flex-col justify-between overflow-hidden px-6 pt-7 pb-5 transition hover:border-washi-momiji/60"
-        >
-          <!-- Subtle Vertical Tategaki Category Watermark on Right Margin -->
-          <span
-            class="tategaki pointer-events-none absolute top-7 right-3 font-serif text-xs font-bold text-washi-bark/35 select-none"
-            aria-hidden="true"
-          >
-            第{{ idx + 1 }}句
-          </span>
-
-          <div>
-            <!-- English Meaning & Audio Triggers -->
-            <div class="flex items-start justify-between gap-3 pr-5">
-              <div>
-                <span
-                  class="font-mono text-[10px] font-bold tracking-widest text-washi-persimmon uppercase"
-                >
-                  {{ item.category }}
-                </span>
-                <h4 class="font-serif text-lg font-bold text-washi-ink">
-                  {{ item.english }}
-                </h4>
+            <div class="relative z-10">
+              <div
+                class="inline-flex items-center justify-center gap-1 font-mono text-[10px] font-bold tracking-wider text-washi-momiji uppercase"
+              >
+                <i
+                  class="ph-fill ph-speaker-high text-xs transition-transform group-hover:scale-110"
+                  :class="{ 'animate-bounce': speakingId === sign.kanji }"
+                  aria-hidden="true"
+                ></i>
+                <span>{{ sign.pronunciation }}</span>
               </div>
 
-              <div class="flex shrink-0 items-center gap-1">
-                <button
-                  type="button"
-                  class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[11px] font-semibold transition"
-                  :class="
-                    speakingId === item.id && speakingSpeed === 'normal'
-                      ? 'border-washi-momiji bg-washi-momiji text-white'
-                      : 'border-washi-border bg-[#FFFDF9] text-washi-ink hover:border-washi-momiji'
-                  "
-                  title="Listen at normal speed"
-                  @click="speakJapanese(item, 'normal')"
-                >
-                  <i
-                    class="ph-fill ph-speaker-high"
+              <div
+                class="mt-1 font-serif text-3xl font-extrabold transition-colors group-hover:text-washi-momiji"
+                :class="speakingId === sign.kanji ? 'text-washi-momiji' : 'text-washi-ink'"
+              >
+                {{ sign.kanji }}
+              </div>
+
+              <div class="mt-0.5 font-mono text-[11px] text-washi-umber">
+                {{ sign.reading }}
+              </div>
+
+              <div
+                class="mt-2 inline-block rounded-full border border-washi-border/80 bg-[#FFFDF9]/90 px-2.5 py-0.5 font-serif text-xs font-bold text-washi-ink"
+              >
+                {{ sign.meaning }}
+              </div>
+
+              <p class="mt-2 text-[11px] leading-snug text-washi-umber">
+                {{ sign.whereSeen }}
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Autumn Tanzaku (短冊) Poetry Strips Grid -->
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <span
+              class="font-mono text-[11px] font-bold tracking-widest text-washi-momiji uppercase"
+            >
+              短冊帳 · SPOKEN PHRASE STRIPS ({{ filteredPhrases.length }})
+            </span>
+            <h3 class="font-serif text-xl font-bold text-washi-ink sm:text-2xl">
+              How It’s Written &amp; How to Pronounce It
+            </h3>
+          </div>
+          <span class="font-mono text-xs text-washi-bark">
+            🍁 marks the stressed syllable in each phrase
+          </span>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <article
+            v-for="(item, idx) in filteredPhrases"
+            :key="item.id"
+            class="tanzaku-strip group relative flex flex-col justify-between overflow-hidden px-6 pt-7 pb-5 transition hover:border-washi-momiji/60"
+          >
+            <!-- Subtle Vertical Tategaki Category Watermark on Right Margin -->
+            <span
+              class="tategaki pointer-events-none absolute top-7 right-3 font-serif text-xs font-bold text-washi-bark/35 select-none"
+              aria-hidden="true"
+            >
+              第{{ idx + 1 }}句
+            </span>
+
+            <div>
+              <!-- English Meaning & Audio Triggers -->
+              <div class="flex items-start justify-between gap-3 pr-5">
+                <div>
+                  <span
+                    class="font-mono text-[10px] font-bold tracking-widest text-washi-persimmon uppercase"
+                  >
+                    {{ item.category }}
+                  </span>
+                  <h4 class="font-serif text-lg font-bold text-washi-ink">
+                    {{ item.english }}
+                  </h4>
+                </div>
+
+                <div class="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[11px] font-semibold transition"
                     :class="
                       speakingId === item.id && speakingSpeed === 'normal'
-                        ? 'text-white'
-                        : 'text-washi-momiji'
+                        ? 'border-washi-momiji bg-washi-momiji text-white'
+                        : 'border-washi-border bg-[#FFFDF9] text-washi-ink hover:border-washi-momiji'
                     "
-                  ></i>
-                  <span>Listen</span>
-                </button>
-                <button
-                  type="button"
-                  class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold transition"
-                  :class="
-                    speakingId === item.id && speakingSpeed === 'slow'
-                      ? 'border-washi-jrink bg-washi-jrink text-white'
-                      : 'border-washi-border bg-[#FFFDF9] text-washi-umber hover:border-washi-momiji hover:text-washi-ink'
-                  "
-                  title="Listen slowly syllable-by-syllable"
-                  @click="speakJapanese(item, 'slow')"
-                >
-                  <span>🐢 Slow</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Written Script with Floating Furigana Reading -->
-            <div class="my-4 border-y border-dashed border-washi-border/80 py-3.5">
-              <div class="font-mono text-[11px] tracking-wide text-washi-umber">
-                {{ item.hiragana }}
-              </div>
-              <div
-                class="mt-0.5 font-serif text-2xl font-extrabold tracking-wide text-washi-ink sm:text-[26px]"
-              >
-                {{ item.japanese }}
-              </div>
-            </div>
-
-            <!-- Flowing Prosody / Pronunciation Rhythm Line (Zero Boxy Pills) -->
-            <div class="space-y-1.5">
-              <div class="flex items-baseline justify-between font-mono text-xs">
-                <span class="text-[10px] tracking-wider text-washi-bark uppercase">ROMAJI</span>
-                <span class="font-semibold text-washi-ink">{{ item.romaji }}</span>
-              </div>
-
-              <!-- Syllable Stress Wave -->
-              <div class="flex flex-wrap items-end gap-x-3 gap-y-2 pt-1">
-                <span class="font-mono text-[10px] tracking-wider text-washi-momiji uppercase">
-                  SAY IT:
-                </span>
-                <div
-                  v-for="(word, wIdx) in parseProsody(item.pronunciation)"
-                  :key="wIdx"
-                  class="inline-flex items-baseline"
-                >
-                  <template v-for="(syl, sIdx) in word" :key="sIdx">
-                    <span
-                      class="relative font-mono text-xs transition"
+                    title="Listen at normal speed"
+                    @click="speakJapanese(item, 'normal')"
+                  >
+                    <i
+                      class="ph-fill ph-speaker-high"
                       :class="
-                        syl.stressed
-                          ? 'border-b-2 border-washi-momiji px-0.5 font-extrabold text-washi-momiji'
-                          : 'text-washi-umber'
+                        speakingId === item.id && speakingSpeed === 'normal'
+                          ? 'text-white'
+                          : 'text-washi-momiji'
                       "
-                    >
-                      <span v-if="syl.stressed" class="mr-0.5 text-[10px]" aria-hidden="true"
-                        >🍁</span
-                      >{{ syl.text }}
-                    </span>
-                    <span
-                      v-if="sIdx < word.length - 1"
-                      class="mx-0.5 font-mono text-[10px] text-washi-border"
-                      >·</span
-                    >
-                  </template>
+                    ></i>
+                    <span>Listen</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold transition"
+                    :class="
+                      speakingId === item.id && speakingSpeed === 'slow'
+                        ? 'border-washi-jrink bg-washi-jrink text-white'
+                        : 'border-washi-border bg-[#FFFDF9] text-washi-umber hover:border-washi-momiji hover:text-washi-ink'
+                    "
+                    title="Listen slowly syllable-by-syllable"
+                    @click="speakJapanese(item, 'slow')"
+                  >
+                    <span>🐢 Slow</span>
+                  </button>
                 </div>
               </div>
+
+              <!-- Written Script with Floating Furigana Reading -->
+              <div class="my-4 border-y border-dashed border-washi-border/80 py-3.5">
+                <div class="font-mono text-[11px] tracking-wide text-washi-umber">
+                  {{ item.hiragana }}
+                </div>
+                <div
+                  class="mt-0.5 font-serif text-2xl font-extrabold tracking-wide text-washi-ink sm:text-[26px]"
+                >
+                  {{ item.japanese }}
+                </div>
+              </div>
+
+              <!-- Flowing Prosody / Pronunciation Rhythm Line (Zero Boxy Pills) -->
+              <div class="space-y-1.5">
+                <div class="flex items-baseline justify-between font-mono text-xs">
+                  <span class="text-[10px] tracking-wider text-washi-bark uppercase">ROMAJI</span>
+                  <span class="font-semibold text-washi-ink">{{ item.romaji }}</span>
+                </div>
+
+                <!-- Syllable Stress Wave -->
+                <div class="flex flex-wrap items-end gap-x-3 gap-y-2 pt-1">
+                  <span class="font-mono text-[10px] tracking-wider text-washi-momiji uppercase">
+                    SAY IT:
+                  </span>
+                  <div
+                    v-for="(word, wIdx) in parseProsody(item.pronunciation)"
+                    :key="wIdx"
+                    class="inline-flex items-baseline"
+                  >
+                    <template v-for="(syl, sIdx) in word" :key="sIdx">
+                      <span
+                        class="relative font-mono text-xs transition"
+                        :class="
+                          syl.stressed
+                            ? 'border-b-2 border-washi-momiji px-0.5 font-extrabold text-washi-momiji'
+                            : 'text-washi-umber'
+                        "
+                      >
+                        <span v-if="syl.stressed" class="mr-0.5 text-[10px]" aria-hidden="true"
+                          >🍁</span
+                        >{{ syl.text }}
+                      </span>
+                      <span
+                        v-if="sIdx < word.length - 1"
+                        class="mx-0.5 font-mono text-[10px] text-washi-border"
+                        >·</span
+                      >
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Context Whisper -->
+              <p
+                v-if="item.contextTip"
+                class="mt-3 text-xs italic leading-relaxed text-washi-umber"
+              >
+                “{{ item.contextTip }}”
+              </p>
             </div>
 
-            <!-- Context Whisper -->
-            <p v-if="item.contextTip" class="mt-3 text-xs italic leading-relaxed text-washi-umber">
-              “{{ item.contextTip }}”
-            </p>
-          </div>
-
-          <!-- Subtle Bottom Actions -->
-          <div class="mt-4 flex items-center justify-between pt-2 text-xs">
-            <button
-              type="button"
-              class="font-mono text-[11px] text-washi-bark transition hover:text-washi-momiji"
-              @click="copyPhrase(item)"
-            >
-              Copy phrase
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 font-serif text-xs font-bold text-washi-momiji group-hover:underline"
-              @click="activeShowCard = item"
-            >
-              <span>Point &amp; Show Staff</span>
-              <i class="ph-bold ph-arrow-up-right"></i>
-            </button>
-          </div>
-        </article>
+            <!-- Subtle Bottom Actions -->
+            <div class="mt-4 flex items-center justify-between pt-2 text-xs">
+              <button
+                type="button"
+                class="font-mono text-[11px] text-washi-bark transition hover:text-washi-momiji"
+                @click="copyPhrase(item)"
+              >
+                Copy phrase
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 font-serif text-xs font-bold text-washi-momiji group-hover:underline"
+                @click="activeShowCard = item"
+              >
+                <span>Point &amp; Show Staff</span>
+                <i class="ph-bold ph-arrow-up-right"></i>
+              </button>
+            </div>
+          </article>
+        </div>
       </div>
-    </div>
+
+      <!-- 4. Bottom Trigger Button for Extra Phrases & Visual Signs -->
+      <div class="flex justify-center pt-2 pb-4">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2.5 rounded-full border border-washi-border bg-[#FFFDF9] px-6 py-3 font-serif text-sm font-bold text-washi-ink shadow-xs transition hover:border-washi-momiji hover:text-washi-momiji active:scale-[0.99]"
+          @click="showMorePhrasesModal = true"
+        >
+          <i class="ph-fill ph-book-open-text text-lg text-washi-momiji" aria-hidden="true"></i>
+          <span>More Situation Phrases &amp; Visual Signs (+46)</span>
+          <i class="ph-bold ph-arrow-up-right text-xs text-washi-bark" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
 
     <!-- Fullscreen Washi Scroll Modal for Showing Staff -->
     <div
       v-if="activeShowCard"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-[#1E1916]/65 p-4 backdrop-blur-xs"
+      class="fixed inset-0 z-60 flex items-center justify-center bg-[#1E1916]/65 p-4 backdrop-blur-xs"
       @click.self="activeShowCard = null"
     >
       <div class="oshinagaki-sheet relative w-full max-w-lg p-8 text-center shadow-2xl sm:p-10">
@@ -587,5 +615,160 @@ async function copyPhrase(phrase: PhraseItem): Promise<void> {
         </div>
       </div>
     </div>
-  </section>
+
+    <!-- Pocket Situation Phrases & Visual Signs Popup Modal -->
+    <div
+      v-if="showMorePhrasesModal"
+      class="fixed inset-0 z-50 flex items-end justify-center bg-[#1E1916]/65 p-0 backdrop-blur-xs sm:items-center sm:p-4"
+      @click.self="showMorePhrasesModal = false"
+    >
+      <div
+        class="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-2xl border border-washi-border bg-[#FAF6F0] text-left text-washi-ink shadow-2xl sm:rounded-2xl"
+      >
+        <!-- Sticky Modal Header -->
+        <div
+          class="flex shrink-0 items-center justify-between border-b border-washi-border bg-[#F3EDE2] px-4 py-3.5 sm:px-6"
+        >
+          <div class="flex items-center gap-2.5">
+            <i class="ph-fill ph-translate text-lg text-washi-momiji" aria-hidden="true"></i>
+            <div>
+              <h3 class="font-serif text-base font-bold tracking-tight text-washi-ink sm:text-lg">
+                Pocket Situation Phrases &amp; Visual Signs
+              </h3>
+              <p class="font-mono text-[11px] text-washi-umber">
+                Tap any speaker icon to listen or tap a phrase to show staff
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-full border border-washi-border bg-[#FFFDF9] px-3 py-1 font-mono text-xs font-semibold text-washi-ink transition hover:border-washi-momiji hover:text-washi-momiji"
+            aria-label="Close modal"
+            @click="showMorePhrasesModal = false"
+          >
+            <span>Close</span>
+            <i class="ph-bold ph-x text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Modal Body -->
+        <div class="space-y-6 overflow-y-auto p-4 sm:p-6">
+          <!-- Grouped Situational Phrases -->
+          <section v-for="group in morePhraseSections" :key="group.key" class="space-y-2.5">
+            <h4
+              class="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-washi-momiji uppercase"
+            >
+              <i :class="group.icon" aria-hidden="true"></i>
+              <span>{{ group.title }}</span>
+            </h4>
+
+            <div
+              class="divide-y divide-washi-border/70 overflow-hidden rounded-xl border border-washi-border bg-[#FFFDF9]"
+            >
+              <div
+                v-for="item in group.items"
+                :key="item.id"
+                class="grid grid-cols-1 gap-2 px-4 py-3 transition hover:bg-[#FAF6F0]/60 sm:grid-cols-12 sm:items-center sm:gap-4"
+              >
+                <!-- Left Column (5/12): English & Context Tip -->
+                <div class="min-w-0 text-left sm:col-span-5">
+                  <div class="font-serif text-sm font-bold text-washi-ink">
+                    {{ item.english }}
+                  </div>
+                  <div
+                    v-if="item.contextTip"
+                    class="mt-0.5 text-[11px] leading-snug text-washi-umber"
+                  >
+                    {{ item.contextTip }}
+                  </div>
+                </div>
+
+                <!-- Right Column (7/12): Romaji, Script & Audio/Card Actions -->
+                <div
+                  class="flex items-center justify-between gap-3 sm:col-span-7 sm:justify-end"
+                >
+                  <div class="min-w-0 text-left sm:text-right">
+                    <div class="font-mono text-xs font-bold break-words text-washi-momiji">
+                      {{ item.romaji }}
+                    </div>
+                    <div class="mt-0.5 font-serif text-sm font-bold break-words text-washi-ink">
+                      {{ item.japanese }}
+                    </div>
+                    <div class="font-mono text-[10px] break-words text-washi-bark">
+                      {{ item.pronunciation }}
+                    </div>
+                  </div>
+
+                  <!-- Quick Listen + Show Card Buttons -->
+                  <div class="flex shrink-0 items-center gap-1.5">
+                    <button
+                      type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full border transition"
+                      :class="
+                        speakingId === item.id
+                          ? 'border-washi-momiji bg-washi-momiji text-white'
+                          : 'border-washi-border bg-[#FFFDF9] text-washi-momiji hover:border-washi-momiji'
+                      "
+                      title="Listen"
+                      @click="speakJapanese(item, 'normal')"
+                    >
+                      <i class="ph-fill ph-speaker-high text-xs"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-washi-border bg-[#FFFDF9] text-washi-umber transition hover:border-washi-momiji hover:text-washi-momiji"
+                      title="Point & Show Staff"
+                      @click="activeShowCard = item"
+                    >
+                      <i class="ph-bold ph-arrows-out-simple text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Bonus Visual Signs Grid -->
+          <section class="space-y-2.5">
+            <h4
+              class="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-washi-momiji uppercase"
+            >
+              <i class="ph-fill ph-signpost" aria-hidden="true"></i>
+              <span>Bonus Vending, Train &amp; Shop Signs</span>
+            </h4>
+
+            <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <button
+                v-for="sign in moreKanjiList"
+                :key="sign.kanji"
+                type="button"
+                class="flex items-start justify-between gap-3 rounded-xl border border-washi-border bg-[#FFFDF9] px-4 py-3 text-left transition hover:border-washi-momiji"
+                :class="{ 'ring-2 ring-washi-momiji': speakingId === sign.kanji }"
+                @click="speakKanji(sign)"
+              >
+                <div class="min-w-0">
+                  <div class="font-serif text-base font-extrabold text-washi-ink">
+                    {{ sign.kanji }}
+                  </div>
+                  <div class="mt-0.5 font-mono text-[11px] font-semibold text-washi-momiji">
+                    {{ sign.meaning }}
+                  </div>
+                  <div class="mt-1 text-[11px] leading-snug text-washi-umber">
+                    <span class="font-mono">{{ sign.reading }}</span> — {{ sign.whereSeen }}
+                  </div>
+                </div>
+
+                <span
+                  class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-washi-border bg-[#FAF6F0] text-washi-momiji"
+                >
+                  <i class="ph-fill ph-speaker-high text-xs"></i>
+                </span>
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
