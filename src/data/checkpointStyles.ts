@@ -1,4 +1,3 @@
-// src/data/checkpointStyles.ts
 import type { CheckpointStyle, CheckpointType } from '@/types'
 
 // Class names are written out in full so Tailwind's source scanner picks them up.

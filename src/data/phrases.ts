@@ -154,7 +154,7 @@ export const phrasesData: PhraseItem[] = [
     hiragana: 'ジェイアールぱすをうけとりたいです',
     romaji: 'Jei-āru pasu o uketoritai desu',
     pronunciation: 'jeh-ee-AH-roo pah-soo oh oo-keh-toh-ree-TAI dess',
-    contextTip: 'Use at JR Kyoto Station on Nov 21 at 15:40 with your physical passport.',
+    contextTip: 'Use at JR Kyoto Station on Nov 23 with your physical passport.',
   },
 
   // SHOPPING & KONBINI

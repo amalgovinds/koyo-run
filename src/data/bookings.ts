@@ -156,6 +156,17 @@ export const staysData: Stay[] = [
 export const ticketsData: Ticket[] = [
   {
     id: 'tk1',
+    name: 'MAPPA EXPO 15th Anniversary',
+    date: '17 Nov 2026',
+    sortKey: '2026-11-17T13:00',
+    time: '13:00',
+    bookedOn: 'Lawson Overseas Ticket',
+    notes:
+      'Print physical ticket at any Lawson Loppi machine before 13:00! Venue: Yurakucho Museum - Tokyo International Forum B1F (5-min walk from Nijubashi Bridge). Keep entry SHOP ticket for merch.',
+    url: 'https://maps.app.goo.gl/Lr7qt7bLY3ryP9Yo9',
+  },
+  {
+    id: 'tk2',
     name: 'Tokyo Skytree',
     date: '17 Nov 2026',
     sortKey: '2026-11-17T16:00',
@@ -166,7 +177,7 @@ export const ticketsData: Ticket[] = [
     url: 'https://maps.app.goo.gl/SnJbBQi3gQFgD6Us9?g_st=ic',
   },
   {
-    id: 'tk2',
+    id: 'tk3',
     name: 'Shibuya SKY',
     date: '19 Nov 2026',
     sortKey: '2026-11-19T15:40',
@@ -177,7 +188,7 @@ export const ticketsData: Ticket[] = [
     url: 'https://maps.app.goo.gl/xJ3Rsa1ZwEF3f6Pq6?g_st=ic',
   },
   {
-    id: 'tk3',
+    id: 'tk4',
     name: 'Gion Corner',
     date: '21 Nov 2026',
     sortKey: '2026-11-21T18:00',
@@ -188,7 +199,7 @@ export const ticketsData: Ticket[] = [
     url: 'https://www.kyoto-gioncorner.com/global/en.html',
   },
   {
-    id: 'tk4',
+    id: 'tk5',
     name: 'teamLab Borderless',
     date: '28 Nov 2026',
     sortKey: '2026-11-28T17:30',
